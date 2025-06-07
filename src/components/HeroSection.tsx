@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TypeWriter from './TypeWriter';
 import TerminalWindow from './TerminalWindow';
 
@@ -9,6 +9,15 @@ const HeroSection = () => {
 
   const skills = ['Ethical Hacker', 'Cybersecurity Specialist', 'Penetration Tester', 'Security Analyst'];
   const [currentSkill, setCurrentSkill] = useState(0);
+
+  // Animate through skills
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSkill((prev) => (prev + 1) % skills.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [skills.length]);
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -80,33 +89,33 @@ const HeroSection = () => {
           </div>
 
           {/* Right Column - Info */}
-          <div className="text-center lg:text-left space-y-8">
+          <div className="text-center lg:text-left space-y-6">
             <div>
-              <h1 className="text-5xl lg:text-7xl font-bold text-terminal-green glow-text mb-4">
+              <h1 className="text-3xl lg:text-5xl font-bold text-terminal-green glow-text mb-2">
                 VIKAASH
               </h1>
-              <h2 className="text-3xl lg:text-4xl font-bold text-terminal-cyan mb-6">
+              <h2 className="text-2xl lg:text-3xl font-bold text-terminal-cyan mb-4">
                 TRIPATHI
               </h2>
-              <div className="text-xl text-white mb-8">
+              <div className="text-lg text-white mb-6">
                 <span className="text-terminal-cyan">&gt; </span>
-                <span className="text-terminal-green animate-pulse">
+                <span className="text-terminal-green transition-all duration-500">
                   {skills[currentSkill]}
                 </span>
               </div>
             </div>
 
-            <p className="text-lg text-gray-300 leading-relaxed">
+            <p className="text-base text-gray-300 leading-relaxed">
               Passionate cybersecurity professional specializing in ethical hacking, 
               penetration testing, and vulnerability assessment. Dedicated to securing 
               digital infrastructure and protecting against cyber threats.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg glow-border">
+              <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded-lg glow-border text-sm">
                 View Projects
               </button>
-              <button className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg">
+              <button className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded-lg text-sm">
                 Download Resume
               </button>
             </div>
