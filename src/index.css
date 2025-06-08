@@ -52,7 +52,7 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -60,30 +60,30 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-terminal-green rounded;
+    @apply bg-terminal-red rounded;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-terminal-cyan;
+    @apply bg-terminal-green;
   }
 }
 
 @layer components {
   .terminal-window {
     @apply bg-terminal-dark border border-terminal-gray rounded-lg;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 20px rgba(255, 0, 64, 0.1);
   }
 
   .terminal-header {
-    @apply flex items-center p-3 border-b border-terminal-gray;
+    @apply flex items-center p-2 lg:p-3 border-b border-terminal-gray;
   }
 
   .terminal-dot {
-    @apply w-3 h-3 rounded-full mr-2;
+    @apply w-2 lg:w-3 h-2 lg:h-3 rounded-full mr-1 lg:mr-2;
   }
 
   .terminal-content {
-    @apply p-4 font-mono text-sm;
+    @apply p-3 lg:p-4 font-mono text-xs lg:text-sm;
   }
 
   .matrix-bg {
@@ -102,18 +102,24 @@
   }
 
   .glow-border {
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    box-shadow: 0 0 10px rgba(255, 0, 64, 0.3);
   }
 
   .cyber-card {
-    @apply bg-terminal-dark border border-terminal-gray rounded-lg p-6 transition-all duration-300;
+    @apply bg-terminal-dark border border-terminal-gray rounded-lg p-3 lg:p-6 transition-all duration-300;
     transform: perspective(1000px) rotateX(0deg);
   }
 
   .cyber-card:hover {
-    @apply border-terminal-green shadow-lg;
-    transform: perspective(1000px) rotateX(5deg) translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+    @apply border-terminal-red shadow-lg;
+    transform: perspective(1000px) rotateX(2deg) translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 0, 64, 0.2);
+  }
+
+  @media (min-width: 1024px) {
+    .cyber-card:hover {
+      transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+    }
   }
 }
 
@@ -122,6 +128,12 @@
   position: absolute;
   color: #00ff41;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
+  font-size: 12px;
   animation: matrix-rain 3s linear infinite;
+}
+
+@media (min-width: 768px) {
+  .matrix-char {
+    font-size: 14px;
+  }
 }

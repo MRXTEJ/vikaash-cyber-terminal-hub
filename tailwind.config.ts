@@ -56,6 +56,8 @@ export default {
 				terminal: {
 					green: '#00ff41',
 					cyan: '#00ffff',
+					red: '#ff0040',
+					orange: '#ff8040',
 					dark: '#0a0a0a',
 					darker: '#050505',
 					gray: '#1a1a1a',
