@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import TypeWriter from './TypeWriter';
 import TerminalWindow from './TerminalWindow';
@@ -106,10 +105,10 @@ const HeroSection = () => {
           {/* Right Column - Info */}
           <div className="text-center lg:text-left space-y-4 lg:space-y-6 order-1 lg:order-2">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2 animate-pulse">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2">
                 VIKASH
               </h1>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4 animate-glow">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4">
                 TRIPATHI
               </h2>
               <div className="text-sm sm:text-base lg:text-lg text-white mb-4 lg:mb-6">
