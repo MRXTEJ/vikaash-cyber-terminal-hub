@@ -12,7 +12,8 @@ const CertificatesSection = () => {
       date: '2024',
       status: 'Active',
       description: 'Comprehensive certification covering ethical hacking methodologies and penetration testing techniques.',
-      skills: ['Penetration Testing', 'Vulnerability Assessment', 'Network Security', 'Web Application Security']
+      skills: ['Penetration Testing', 'Vulnerability Assessment', 'Network Security', 'Web Application Security'],
+      viewLink: 'https://www.eccouncil.org/programs/certified-ethical-hacker-ceh/'
     },
     {
       name: 'CompTIA Security+',
@@ -20,7 +21,8 @@ const CertificatesSection = () => {
       date: '2023',
       status: 'Active',
       description: 'Foundation-level cybersecurity certification covering essential security concepts and practices.',
-      skills: ['Risk Management', 'Cryptography', 'Identity Management', 'Incident Response']
+      skills: ['Risk Management', 'Cryptography', 'Identity Management', 'Incident Response'],
+      viewLink: 'https://www.comptia.org/certifications/security'
     },
     {
       name: 'OSCP (Offensive Security Certified Professional)',
@@ -28,7 +30,8 @@ const CertificatesSection = () => {
       date: 'In Progress',
       status: 'Pursuing',
       description: 'Advanced hands-on penetration testing certification requiring practical exploitation skills.',
-      skills: ['Buffer Overflows', 'Privilege Escalation', 'Active Directory', 'Manual Exploitation']
+      skills: ['Buffer Overflows', 'Privilege Escalation', 'Active Directory', 'Manual Exploitation'],
+      viewLink: 'https://www.offensive-security.com/pwk-oscp/'
     },
     {
       name: 'Cybersecurity Fundamentals',
@@ -36,9 +39,14 @@ const CertificatesSection = () => {
       date: '2023',
       status: 'Completed',
       description: 'Foundational course covering cybersecurity principles and threat landscape.',
-      skills: ['Threat Intelligence', 'Security Architecture', 'Compliance', 'Risk Assessment']
+      skills: ['Threat Intelligence', 'Security Architecture', 'Compliance', 'Risk Assessment'],
+      viewLink: 'https://www.ibm.com/training/cybersecurity'
     }
   ];
+
+  const handleViewCertificate = (link: string) => {
+    window.open(link, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <section id="certificates" className="py-20 relative">
@@ -138,7 +146,10 @@ const CertificatesSection = () => {
               </div>
 
               <div className="pt-4">
-                <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded w-full">
+                <button 
+                  onClick={() => handleViewCertificate(certificates[selectedCert].viewLink)}
+                  className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded w-full"
+                >
                   View Certificate
                 </button>
               </div>

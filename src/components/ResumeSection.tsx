@@ -42,6 +42,25 @@ const ResumeSection = () => {
     }
   ];
 
+  const handleDownloadResume = () => {
+    // Create a dummy PDF download
+    const link = document.createElement('a');
+    link.href = '#'; // Replace with actual resume PDF URL
+    link.download = 'Vikash_Tripathi_Resume.pdf';
+    link.click();
+    
+    // Show a message since we don't have an actual PDF
+    alert('Resume download will start shortly. Please contact for the actual PDF file.');
+  };
+
+  const handleEmailResume = () => {
+    const subject = encodeURIComponent('Resume Request - Vikash Tripathi');
+    const body = encodeURIComponent('Hello Vikash,\n\nI would like to request your resume for review.\n\nBest regards,');
+    const mailtoLink = `mailto:vikash.tripathi@example.com?subject=${subject}&body=${body}`;
+    
+    window.location.href = mailtoLink;
+  };
+
   return (
     <section id="resume" className="py-20 relative">
       <div className="container mx-auto px-4">
@@ -110,11 +129,17 @@ const ResumeSection = () => {
                 about my experience, skills, and achievements.
               </p>
               <div className="space-y-4">
-                <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg w-full glow-border">
+                <button 
+                  onClick={handleDownloadResume}
+                  className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg w-full glow-border"
+                >
                   <span className="mr-2">📄</span>
                   Download PDF Resume
                 </button>
-                <button className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg w-full">
+                <button 
+                  onClick={handleEmailResume}
+                  className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg w-full"
+                >
                   <span className="mr-2">📧</span>
                   Email Resume
                 </button>

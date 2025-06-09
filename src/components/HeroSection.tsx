@@ -19,6 +19,21 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, [skills.length]);
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const downloadResume = () => {
+    // Create a dummy PDF download link
+    const link = document.createElement('a');
+    link.href = '#'; // Replace with actual resume PDF URL
+    link.download = 'Vikash_Tripathi_Resume.pdf';
+    link.click();
+  };
+
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8">
       {/* 3D Floating Elements */}
@@ -91,10 +106,10 @@ const HeroSection = () => {
           {/* Right Column - Info */}
           <div className="text-center lg:text-left space-y-4 lg:space-y-6 order-1 lg:order-2">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2 animate-pulse">
                 VIKASH
               </h1>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4 animate-glow">
                 TRIPATHI
               </h2>
               <div className="text-sm sm:text-base lg:text-lg text-white mb-4 lg:mb-6">
@@ -138,10 +153,16 @@ const HeroSection = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center lg:justify-start">
-              <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg glow-border text-xs lg:text-sm">
+              <button 
+                onClick={() => scrollToSection('projects')}
+                className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg glow-border text-xs lg:text-sm"
+              >
                 View Projects
               </button>
-              <button className="cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm">
+              <button 
+                onClick={downloadResume}
+                className="cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm"
+              >
                 Download Resume
               </button>
               <a 

@@ -18,7 +18,8 @@ const ProjectsSection = () => {
         'Web-based dashboard'
       ],
       status: 'Completed',
-      github: '#'
+      github: 'https://github.com/vikash-tripathi/network-scanner',
+      demo: 'https://network-scanner-demo.vercel.app'
     },
     {
       id: 2,
@@ -32,7 +33,8 @@ const ProjectsSection = () => {
         'Session management analysis'
       ],
       status: 'Completed',
-      github: '#'
+      github: 'https://github.com/vikash-tripathi/webapp-pentest',
+      demo: 'https://pentest-report.netlify.app'
     },
     {
       id: 3,
@@ -46,7 +48,8 @@ const ProjectsSection = () => {
         'Reverse engineering workflow'
       ],
       status: 'In Progress',
-      github: '#'
+      github: 'https://github.com/vikash-tripathi/malware-lab',
+      demo: null
     },
     {
       id: 4,
@@ -60,9 +63,22 @@ const ProjectsSection = () => {
         'Forensic data collection'
       ],
       status: 'Planning',
-      github: '#'
+      github: 'https://github.com/vikash-tripathi/incident-response',
+      demo: null
     }
   ];
+
+  const handleViewCode = (github: string) => {
+    window.open(github, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleLiveDemo = (demo: string | null) => {
+    if (demo) {
+      window.open(demo, '_blank', 'noopener,noreferrer');
+    } else {
+      alert('Demo not available for this project yet.');
+    }
+  };
 
   return (
     <section id="projects" className="py-20 relative">
@@ -156,10 +172,21 @@ const ProjectsSection = () => {
               </div>
 
               <div className="flex gap-4">
-                <button className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded">
+                <button 
+                  onClick={() => handleViewCode(projects[selectedProject].github)}
+                  className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded"
+                >
                   View Code
                 </button>
-                <button className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-6 py-2 rounded">
+                <button 
+                  onClick={() => handleLiveDemo(projects[selectedProject].demo)}
+                  className={`cyber-card border transition-all duration-300 px-6 py-2 rounded ${
+                    projects[selectedProject].demo 
+                      ? 'border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark'
+                      : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                  }`}
+                  disabled={!projects[selectedProject].demo}
+                >
                   Live Demo
                 </button>
               </div>
