@@ -4,16 +4,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 import ProjectsManager from '@/components/admin/ProjectsManager';
 import CertificatesManager from '@/components/admin/CertificatesManager';
 import ResumeManager from '@/components/admin/ResumeManager';
-import { LogOut, Home, Shield } from 'lucide-react';
+import MessagesManager from '@/components/admin/MessagesManager';
+import ActivityManager from '@/components/admin/ActivityManager';
+import { LogOut, Home, Shield, Bell, Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
   const { user, isAdmin, adminLoading, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('projects');
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadActivity, setUnreadActivity] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -30,6 +36,27 @@ const Admin = () => {
       });
     }
   }, [isAdmin, adminLoading, loading, user, toast]);
+
+  // Fetch unread counts
+  useEffect(() => {
+    if (isAdmin) {
+      fetchUnreadCounts();
+    }
+  }, [isAdmin]);
+
+  const fetchUnreadCounts = async () => {
+    try {
+      const [messagesResult, activityResult] = await Promise.all([
+        supabase.from('messages').select('id', { count: 'exact' }).eq('is_read', false),
+        supabase.from('activity_log').select('id', { count: 'exact' }).eq('is_read', false),
+      ]);
+
+      setUnreadMessages(messagesResult.count || 0);
+      setUnreadActivity(activityResult.count || 0);
+    } catch (error) {
+      console.error('Error fetching unread counts:', error);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -103,10 +130,28 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
-            <TabsTrigger value="resume">Resume PDF</TabsTrigger>
+            <TabsTrigger value="resume">Resume</TabsTrigger>
+            <TabsTrigger value="messages" className="relative">
+              <Mail className="w-4 h-4 mr-1" />
+              Messages
+              {unreadMessages > 0 && (
+                <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-xs">
+                  {unreadMessages}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="relative">
+              <Bell className="w-4 h-4 mr-1" />
+              Activity
+              {unreadActivity > 0 && (
+                <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-xs">
+                  {unreadActivity}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="projects">
@@ -119,6 +164,14 @@ const Admin = () => {
 
           <TabsContent value="resume">
             <ResumeManager />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <MessagesManager />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityManager />
           </TabsContent>
         </Tabs>
       </main>
