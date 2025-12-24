@@ -10,7 +10,10 @@ import CertificatesManager from '@/components/admin/CertificatesManager';
 import ResumeManager from '@/components/admin/ResumeManager';
 import MessagesManager from '@/components/admin/MessagesManager';
 import ActivityManager from '@/components/admin/ActivityManager';
-import { LogOut, Home, Shield, Bell, Mail } from 'lucide-react';
+import HeroManager from '@/components/admin/HeroManager';
+import AboutManager from '@/components/admin/AboutManager';
+import ContactManager from '@/components/admin/ContactManager';
+import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
@@ -130,29 +133,58 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="certificates">Certificates</TabsTrigger>
-            <TabsTrigger value="resume">Resume</TabsTrigger>
-            <TabsTrigger value="messages" className="relative">
-              <Mail className="w-4 h-4 mr-1" />
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8">
+            <TabsTrigger value="hero" className="text-xs">
+              <User className="w-3 h-3 mr-1 hidden sm:inline" />
+              Hero
+            </TabsTrigger>
+            <TabsTrigger value="about" className="text-xs">
+              <FileText className="w-3 h-3 mr-1 hidden sm:inline" />
+              About
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="text-xs">
+              <Briefcase className="w-3 h-3 mr-1 hidden sm:inline" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="certificates" className="text-xs">
+              <Award className="w-3 h-3 mr-1 hidden sm:inline" />
+              Certificates
+            </TabsTrigger>
+            <TabsTrigger value="resume" className="text-xs">
+              <FileText className="w-3 h-3 mr-1 hidden sm:inline" />
+              Resume
+            </TabsTrigger>
+            <TabsTrigger value="contact" className="text-xs">
+              <Settings className="w-3 h-3 mr-1 hidden sm:inline" />
+              Contact
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="relative text-xs">
+              <Mail className="w-3 h-3 mr-1 hidden sm:inline" />
               Messages
               {unreadMessages > 0 && (
-                <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-xs">
+                <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
                   {unreadMessages}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="activity" className="relative">
-              <Bell className="w-4 h-4 mr-1" />
+            <TabsTrigger value="activity" className="relative text-xs">
+              <Bell className="w-3 h-3 mr-1 hidden sm:inline" />
               Activity
               {unreadActivity > 0 && (
-                <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-xs">
+                <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
                   {unreadActivity}
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="hero">
+            <HeroManager />
+          </TabsContent>
+
+          <TabsContent value="about">
+            <AboutManager />
+          </TabsContent>
 
           <TabsContent value="projects">
             <ProjectsManager />
@@ -164,6 +196,10 @@ const Admin = () => {
 
           <TabsContent value="resume">
             <ResumeManager />
+          </TabsContent>
+
+          <TabsContent value="contact">
+            <ContactManager />
           </TabsContent>
 
           <TabsContent value="messages">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +11,39 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(2000, 'Message too long'),
 });
 
+interface SocialLink {
+  name: string;
+  url: string;
+  icon: string;
+}
+
+interface ContactData {
+  email: string;
+  phone: string;
+  location: string;
+  linkedinUrl: string;
+  linkedinUsername: string;
+  responseTime: string;
+  preferredContact: string;
+  socialLinks: SocialLink[];
+}
+
+const defaultContactData: ContactData = {
+  email: 'vikash.tripathi@example.com',
+  phone: '+91 XXXXX XXXXX',
+  location: 'India',
+  linkedinUrl: 'https://www.linkedin.com/in/vikash-tripathi80',
+  linkedinUsername: '/in/vikash-tripathi80',
+  responseTime: 'Usually within 24 hours',
+  preferredContact: 'LinkedIn/Email',
+  socialLinks: [
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vikash-tripathi80', icon: '💼' },
+    { name: 'GitHub', url: '#', icon: '📁' },
+    { name: 'Twitter', url: '#', icon: '🐦' },
+    { name: 'Email', url: 'mailto:vikash@example.com', icon: '📧' },
+  ],
+};
+
 const ContactSection = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,7 +52,29 @@ const ContactSection = () => {
     message: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [contactData, setContactData] = useState<ContactData>(defaultContactData);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchContactData();
+  }, []);
+
+  const fetchContactData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'contact_data')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data?.value) {
+        setContactData(JSON.parse(data.value));
+      }
+    } catch (error) {
+      console.error('Error fetching contact data:', error);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -80,13 +135,6 @@ const ContactSection = () => {
       setSubmitting(false);
     }
   };
-
-  const socialLinks = [
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vikash-tripathi80', icon: '💼' },
-    { name: 'GitHub', url: '#', icon: '📁' },
-    { name: 'Twitter', url: '#', icon: '🐦' },
-    { name: 'Email', url: 'mailto:vikash@example.com', icon: '📧' }
-  ];
 
   return (
     <section id="contact" className="py-12 lg:py-20 relative px-4">
@@ -190,25 +238,25 @@ const ContactSection = () => {
               <div className="space-y-2 lg:space-y-4">
                 <div className="flex items-center">
                   <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📧</span>
-                  <span className="text-white text-xs lg:text-sm">vikash.tripathi@example.com</span>
+                  <span className="text-white text-xs lg:text-sm">{contactData.email}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📱</span>
-                  <span className="text-white text-xs lg:text-sm">+91 XXXXX XXXXX</span>
+                  <span className="text-white text-xs lg:text-sm">{contactData.phone}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📍</span>
-                  <span className="text-white text-xs lg:text-sm">India</span>
+                  <span className="text-white text-xs lg:text-sm">{contactData.location}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="text-terminal-red mr-2 lg:mr-3 text-sm lg:text-base">💼</span>
                   <a 
-                    href="https://www.linkedin.com/in/vikash-tripathi80" 
+                    href={contactData.linkedinUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-terminal-cyan hover:text-terminal-red transition-colors duration-300 text-xs lg:text-sm"
                   >
-                    LinkedIn: /in/vikash-tripathi80
+                    LinkedIn: {contactData.linkedinUsername}
                   </a>
                 </div>
               </div>
@@ -218,7 +266,7 @@ const ContactSection = () => {
             <div className="cyber-card">
               <h3 className="text-terminal-cyan text-base lg:text-xl mb-4 lg:mb-6 glow-text">Connect With Me</h3>
               <div className="grid grid-cols-2 gap-2 lg:gap-4">
-                {socialLinks.map((link, index) => (
+                {contactData.socialLinks.map((link, index) => (
                   <a
                     key={index}
                     href={link.url}
@@ -240,10 +288,10 @@ const ContactSection = () => {
                   <span className="text-terminal-red">Status:</span> Available for opportunities
                 </div>
                 <div className="text-terminal-green text-xs lg:text-sm">
-                  <span className="text-terminal-red">Response Time:</span> Usually within 24 hours
+                  <span className="text-terminal-red">Response Time:</span> {contactData.responseTime}
                 </div>
                 <div className="text-terminal-green text-xs lg:text-sm">
-                  <span className="text-terminal-red">Preferred Contact:</span> LinkedIn/Email
+                  <span className="text-terminal-red">Preferred Contact:</span> {contactData.preferredContact}
                 </div>
                 <div className="text-terminal-green animate-pulse text-xs lg:text-sm">
                   <span className="text-terminal-red">&gt;</span> Ready to collaborate_

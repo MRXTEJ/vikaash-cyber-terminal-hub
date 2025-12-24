@@ -1,20 +1,56 @@
-
+import { useState, useEffect } from 'react';
 import TerminalWindow from './TerminalWindow';
+import { supabase } from '@/integrations/supabase/client';
 
-const AboutSection = () => {
-  const skills = [
+interface Skill {
+  name: string;
+  level: number;
+}
+
+interface AboutData {
+  bio1: string;
+  bio2: string;
+  skills: Skill[];
+  tools: string[];
+}
+
+const defaultAboutData: AboutData = {
+  bio1: "I'm a passionate cybersecurity enthusiast with a strong foundation in ethical hacking and penetration testing. My journey began with a curiosity about how systems work and evolved into a mission to protect them from malicious actors.",
+  bio2: "Currently focusing on expanding my knowledge in advanced persistent threats, cloud security, and IoT security. I believe in continuous learning and staying updated with the latest security trends and vulnerabilities.",
+  skills: [
     { name: 'Penetration Testing', level: 90 },
     { name: 'Network Security', level: 85 },
     { name: 'Vulnerability Assessment', level: 88 },
     { name: 'Incident Response', level: 75 },
     { name: 'Digital Forensics', level: 80 },
-    { name: 'Malware Analysis', level: 70 }
-  ];
+    { name: 'Malware Analysis', level: 70 },
+  ],
+  tools: ['Kali Linux', 'Metasploit', 'Burp Suite', 'Nmap', 'Wireshark', 'OWASP ZAP', 'Nessus', 'Nikto', 'Aircrack-ng', 'John the Ripper'],
+};
 
-  const tools = [
-    'Kali Linux', 'Metasploit', 'Burp Suite', 'Nmap', 'Wireshark', 
-    'OWASP ZAP', 'Nessus', 'Nikto', 'Aircrack-ng', 'John the Ripper'
-  ];
+const AboutSection = () => {
+  const [aboutData, setAboutData] = useState<AboutData>(defaultAboutData);
+
+  useEffect(() => {
+    fetchAboutData();
+  }, []);
+
+  const fetchAboutData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'about_data')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data?.value) {
+        setAboutData(JSON.parse(data.value));
+      }
+    } catch (error) {
+      console.error('Error fetching about data:', error);
+    }
+  };
 
   return (
     <section id="about" className="py-20 relative">
@@ -39,16 +75,10 @@ const AboutSection = () => {
                 <span className="text-terminal-cyan">echo</span> "Cybersecurity Professional"
               </div>
               <div className="text-white mt-4">
-                I'm a passionate cybersecurity enthusiast with a strong foundation in 
-                ethical hacking and penetration testing. My journey began with a 
-                curiosity about how systems work and evolved into a mission to protect 
-                them from malicious actors.
+                {aboutData.bio1}
               </div>
               <div className="text-white mt-4">
-                Currently focusing on expanding my knowledge in advanced persistent 
-                threats, cloud security, and IoT security. I believe in continuous 
-                learning and staying updated with the latest security trends and 
-                vulnerabilities.
+                {aboutData.bio2}
               </div>
               <div className="text-terminal-green mt-4">
                 <span className="text-terminal-cyan">chmod</span> +x secure_future.sh
@@ -62,7 +92,7 @@ const AboutSection = () => {
             <div className="cyber-card">
               <h3 className="text-terminal-cyan text-xl mb-6 glow-text">Technical Skills</h3>
               <div className="space-y-4">
-                {skills.map((skill, index) => (
+                {aboutData.skills.map((skill, index) => (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-white">{skill.name}</span>
@@ -83,7 +113,7 @@ const AboutSection = () => {
             <div className="cyber-card">
               <h3 className="text-terminal-cyan text-xl mb-6 glow-text">Security Tools</h3>
               <div className="grid grid-cols-2 gap-3">
-                {tools.map((tool, index) => (
+                {aboutData.tools.map((tool, index) => (
                   <div 
                     key={index}
                     className="bg-terminal-gray border border-terminal-green rounded px-3 py-2 text-center text-sm hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300"
