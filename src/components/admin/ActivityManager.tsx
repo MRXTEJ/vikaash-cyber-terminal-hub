@@ -16,7 +16,11 @@ interface Activity {
   created_at: string;
 }
 
-const ActivityManager = () => {
+interface ActivityManagerProps {
+  onUnreadChange?: () => void;
+}
+
+const ActivityManager = ({ onUnreadChange }: ActivityManagerProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -58,6 +62,7 @@ const ActivityManager = () => {
       
       setActivities(activities.map(a => ({ ...a, is_read: true })));
       toast({ title: 'All marked as read' });
+      onUnreadChange?.();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -68,6 +73,7 @@ const ActivityManager = () => {
   };
 
   const clearAll = async () => {
+    const hadUnread = activities.some(a => !a.is_read);
     try {
       const { error } = await supabase
         .from('activity_log')
@@ -78,6 +84,9 @@ const ActivityManager = () => {
       
       setActivities([]);
       toast({ title: 'Activity log cleared' });
+      if (hadUnread) {
+        onUnreadChange?.();
+      }
     } catch (error: any) {
       toast({
         title: 'Error',

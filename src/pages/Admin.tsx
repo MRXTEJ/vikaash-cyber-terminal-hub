@@ -360,11 +360,11 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="messages" className="hacker-card p-4 md:p-6">
-            <MessagesManager />
+            <MessagesManager onUnreadChange={fetchUnreadCounts} />
           </TabsContent>
 
           <TabsContent value="activity" className="hacker-card p-4 md:p-6">
-            <ActivityManager />
+            <ActivityManager onUnreadChange={fetchUnreadCounts} />
           </TabsContent>
 
           <TabsContent value="security" className="hacker-card p-4 md:p-6">
