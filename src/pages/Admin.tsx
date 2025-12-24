@@ -10,7 +10,7 @@ import ResumeManager from '@/components/admin/ResumeManager';
 import { LogOut, Home, Shield } from 'lucide-react';
 
 const Admin = () => {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, adminLoading, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('projects');
@@ -22,14 +22,14 @@ const Admin = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (!loading && user && !isAdmin) {
+    if (!loading && !adminLoading && user && !isAdmin) {
       toast({
         title: 'Access Denied',
         description: 'You do not have admin privileges.',
         variant: 'destructive',
       });
     }
-  }, [isAdmin, loading, user, toast]);
+  }, [isAdmin, adminLoading, loading, user, toast]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -40,7 +40,7 @@ const Admin = () => {
     });
   };
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse">Loading...</div>
