@@ -13,12 +13,13 @@ import ActivityManager from '@/components/admin/ActivityManager';
 import HeroManager from '@/components/admin/HeroManager';
 import AboutManager from '@/components/admin/AboutManager';
 import ContactManager from '@/components/admin/ContactManager';
-import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock, UserCircle, Menu } from 'lucide-react';
+import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock, UserCircle, Terminal, Skull } from 'lucide-react';
 import SecuritySettings from '@/components/admin/SecuritySettings';
 import ProfileManager from '@/components/admin/ProfileManager';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import MatrixRain from '@/components/MatrixRain';
 
 const Admin = () => {
   const { user, isAdmin, adminLoading, loading, signOut } = useAuth();
@@ -111,97 +112,134 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Matrix Background */}
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none">
+        <MatrixRain />
+      </div>
+      
+      {/* Scan Line Effect */}
+      <div className="scan-line" />
+
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
+      <header className="terminal-header-bar sticky top-0 z-50 backdrop-blur-md bg-terminal-darker/90">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-primary glow-text">
-              &lt; Admin Panel /&gt;
-            </h1>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+          <div className="flex items-center gap-3">
+            {/* Kali-inspired Logo */}
+            <div className="kali-logo p-2 rounded-lg bg-terminal-green/10 border border-terminal-green/30">
+              <Skull className="w-8 h-8 dragon-icon" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-terminal-green glow-text font-mono flex items-center gap-2">
+                <Terminal className="w-5 h-5" />
+                <span className="hidden sm:inline">root@admin</span>
+                <span className="sm:hidden">admin</span>
+                <span className="text-terminal-cyan">:~#</span>
+              </h1>
+              <p className="text-xs text-terminal-green/60 font-mono">{user.email}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={() => navigate('/')} variant="outline" size="sm">
-              <Home className="w-4 h-4 mr-2" />
-              View Site
+          <div className="flex items-center gap-2 md:gap-4">
+            <Button 
+              onClick={() => navigate('/')} 
+              variant="outline" 
+              size="sm"
+              className="hacker-button border-terminal-green/30 hover:border-terminal-green/60 hover:bg-terminal-green/10"
+            >
+              <Home className="w-4 h-4 mr-0 md:mr-2" />
+              <span className="hidden md:inline">View Site</span>
             </Button>
-            <Button onClick={handleSignOut} variant="destructive" size="sm">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+            <Button 
+              onClick={handleSignOut} 
+              variant="destructive" 
+              size="sm"
+              className="hacker-button bg-terminal-red/20 border border-terminal-red/50 hover:bg-terminal-red/30"
+            >
+              <LogOut className="w-4 h-4 mr-0 md:mr-2" />
+              <span className="hidden md:inline">Sign Out</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 relative z-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Mobile Navigation - Dropdown */}
           <div className="md:hidden mb-6">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select section" />
+              <SelectTrigger className="w-full border-terminal-green/30 bg-terminal-dark/80 text-terminal-green font-mono">
+                <SelectValue placeholder="$ select module_" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hero">
+              <SelectContent className="bg-terminal-dark border-terminal-green/30">
+                <SelectItem value="hero" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" /> Hero
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <User className="w-4 h-4" /> hero
                   </div>
                 </SelectItem>
-                <SelectItem value="about">
+                <SelectItem value="about" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> About
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <FileText className="w-4 h-4" /> about
                   </div>
                 </SelectItem>
-                <SelectItem value="projects">
+                <SelectItem value="projects" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" /> Projects
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Briefcase className="w-4 h-4" /> projects
                   </div>
                 </SelectItem>
-                <SelectItem value="certificates">
+                <SelectItem value="certificates" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4" /> Certificates
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Award className="w-4 h-4" /> certs
                   </div>
                 </SelectItem>
-                <SelectItem value="resume">
+                <SelectItem value="resume" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Resume
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <FileText className="w-4 h-4" /> resume
                   </div>
                 </SelectItem>
-                <SelectItem value="contact">
+                <SelectItem value="contact" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" /> Contact
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Settings className="w-4 h-4" /> contact
                   </div>
                 </SelectItem>
-                <SelectItem value="messages">
+                <SelectItem value="messages" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" /> Messages
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Mail className="w-4 h-4" /> messages
                     {unreadMessages > 0 && (
-                      <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                      <Badge className="ml-1 px-1 py-0 text-[10px] bg-terminal-red text-white">
                         {unreadMessages}
                       </Badge>
                     )}
                   </div>
                 </SelectItem>
-                <SelectItem value="activity">
+                <SelectItem value="activity" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4" /> Activity
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Bell className="w-4 h-4" /> activity
                     {unreadActivity > 0 && (
-                      <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                      <Badge className="ml-1 px-1 py-0 text-[10px] bg-terminal-red text-white">
                         {unreadActivity}
                       </Badge>
                     )}
                   </div>
                 </SelectItem>
-                <SelectItem value="security">
+                <SelectItem value="security" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" /> Security
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <Lock className="w-4 h-4" /> security
                   </div>
                 </SelectItem>
-                <SelectItem value="profile">
+                <SelectItem value="profile" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <UserCircle className="w-4 h-4" /> Profile
+                    <span className="text-terminal-cyan">&gt;</span>
+                    <UserCircle className="w-4 h-4" /> profile
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -210,102 +248,144 @@ const Admin = () => {
 
           {/* Tablet & Desktop Navigation - Scrollable Tabs */}
           <ScrollArea className="hidden md:block w-full mb-8">
-            <TabsList className="inline-flex w-max min-w-full justify-start gap-1 p-1">
-              <TabsTrigger value="hero" className="text-xs px-3">
+            <TabsList className="inline-flex w-max min-w-full justify-start gap-1 p-1 bg-terminal-dark/50 border border-terminal-green/20 rounded-lg">
+              <TabsTrigger 
+                value="hero" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <User className="w-3 h-3 mr-1" />
-                Hero
+                ./hero
               </TabsTrigger>
-              <TabsTrigger value="about" className="text-xs px-3">
+              <TabsTrigger 
+                value="about" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <FileText className="w-3 h-3 mr-1" />
-                About
+                ./about
               </TabsTrigger>
-              <TabsTrigger value="projects" className="text-xs px-3">
+              <TabsTrigger 
+                value="projects" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Briefcase className="w-3 h-3 mr-1" />
-                Projects
+                ./projects
               </TabsTrigger>
-              <TabsTrigger value="certificates" className="text-xs px-3">
+              <TabsTrigger 
+                value="certificates" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Award className="w-3 h-3 mr-1" />
-                Certs
+                ./certs
               </TabsTrigger>
-              <TabsTrigger value="resume" className="text-xs px-3">
+              <TabsTrigger 
+                value="resume" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <FileText className="w-3 h-3 mr-1" />
-                Resume
+                ./resume
               </TabsTrigger>
-              <TabsTrigger value="contact" className="text-xs px-3">
+              <TabsTrigger 
+                value="contact" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Settings className="w-3 h-3 mr-1" />
-                Contact
+                ./contact
               </TabsTrigger>
-              <TabsTrigger value="messages" className="relative text-xs px-3">
+              <TabsTrigger 
+                value="messages" 
+                className="relative text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Mail className="w-3 h-3 mr-1" />
-                Messages
+                ./mail
                 {unreadMessages > 0 && (
-                  <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                  <Badge className="ml-1 px-1 py-0 text-[10px] bg-terminal-red text-white animate-pulse">
                     {unreadMessages}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="activity" className="relative text-xs px-3">
+              <TabsTrigger 
+                value="activity" 
+                className="relative text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Bell className="w-3 h-3 mr-1" />
-                Activity
+                ./logs
                 {unreadActivity > 0 && (
-                  <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                  <Badge className="ml-1 px-1 py-0 text-[10px] bg-terminal-red text-white animate-pulse">
                     {unreadActivity}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="security" className="text-xs px-3">
+              <TabsTrigger 
+                value="security" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <Lock className="w-3 h-3 mr-1" />
-                Security
+                ./sec
               </TabsTrigger>
-              <TabsTrigger value="profile" className="text-xs px-3">
+              <TabsTrigger 
+                value="profile" 
+                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+              >
                 <UserCircle className="w-3 h-3 mr-1" />
-                Profile
+                ./me
               </TabsTrigger>
             </TabsList>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="bg-terminal-green/10" />
           </ScrollArea>
 
-          <TabsContent value="hero">
+          <TabsContent value="hero" className="hacker-card p-4 md:p-6">
             <HeroManager />
           </TabsContent>
 
-          <TabsContent value="about">
+          <TabsContent value="about" className="hacker-card p-4 md:p-6">
             <AboutManager />
           </TabsContent>
 
-          <TabsContent value="projects">
+          <TabsContent value="projects" className="hacker-card p-4 md:p-6">
             <ProjectsManager />
           </TabsContent>
 
-          <TabsContent value="certificates">
+          <TabsContent value="certificates" className="hacker-card p-4 md:p-6">
             <CertificatesManager />
           </TabsContent>
 
-          <TabsContent value="resume">
+          <TabsContent value="resume" className="hacker-card p-4 md:p-6">
             <ResumeManager />
           </TabsContent>
 
-          <TabsContent value="contact">
+          <TabsContent value="contact" className="hacker-card p-4 md:p-6">
             <ContactManager />
           </TabsContent>
 
-          <TabsContent value="messages">
+          <TabsContent value="messages" className="hacker-card p-4 md:p-6">
             <MessagesManager />
           </TabsContent>
 
-          <TabsContent value="activity">
+          <TabsContent value="activity" className="hacker-card p-4 md:p-6">
             <ActivityManager />
           </TabsContent>
 
-          <TabsContent value="security">
+          <TabsContent value="security" className="hacker-card p-4 md:p-6">
             <SecuritySettings />
           </TabsContent>
 
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="hacker-card p-4 md:p-6">
             <ProfileManager />
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Footer Terminal Line */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-terminal-darker/90 border-t border-terminal-green/20 py-2 px-4 backdrop-blur-md z-40">
+        <div className="container mx-auto flex items-center justify-between text-xs font-mono text-terminal-green/50">
+          <span className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-terminal-green rounded-full animate-pulse" />
+            system: active
+          </span>
+          <span className="hidden sm:block">session: encrypted</span>
+          <span>v1.0.0</span>
+        </div>
+      </footer>
     </div>
   );
 };

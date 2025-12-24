@@ -121,6 +121,119 @@
       transform: perspective(1000px) rotateX(5deg) translateY(-5px);
     }
   }
+
+  /* Hacker Admin Panel Styles */
+  .hacker-card {
+    @apply bg-terminal-dark/80 border border-terminal-green/20 rounded-lg transition-all duration-300 relative overflow-hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .hacker-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .hacker-card:hover::before {
+    left: 100%;
+  }
+
+  .hacker-card:hover {
+    @apply border-terminal-green/60;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  }
+
+  .hacker-button {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .hacker-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 255, 65, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+  }
+
+  .hacker-button:hover::after {
+    width: 300px;
+    height: 300px;
+  }
+
+  .hacker-button:hover {
+    @apply text-terminal-green;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  }
+
+  .terminal-header-bar {
+    @apply bg-terminal-darker border-b border-terminal-green/30 relative;
+  }
+
+  .terminal-header-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.5), transparent);
+  }
+
+  .kali-logo {
+    @apply text-terminal-green transition-all duration-300;
+    filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.5));
+  }
+
+  .kali-logo:hover {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.8));
+    transform: scale(1.05);
+  }
+
+  .scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.3), transparent);
+    animation: scan-line 8s linear infinite;
+    pointer-events: none;
+  }
+
+  .nav-item-hover {
+    @apply relative transition-all duration-200;
+  }
+
+  .nav-item-hover::before {
+    content: '>';
+    position: absolute;
+    left: -15px;
+    opacity: 0;
+    color: #00ff41;
+    transition: all 0.2s;
+  }
+
+  .nav-item-hover:hover::before {
+    left: -10px;
+    opacity: 1;
+  }
+
+  .typing-effect {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #00ff41;
+    animation: typing 2s steps(20, end), terminal-blink 1s infinite;
+  }
 }
 
 /* Matrix rain effect */
@@ -136,4 +249,14 @@
   .matrix-char {
     font-size: 14px;
   }
+}
+
+/* Kali Dragon SVG Animation */
+@keyframes dragon-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.dragon-icon {
+  animation: dragon-pulse 3s ease-in-out infinite;
 }
