@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMFA } from '@/hooks/useMFA';
 import { useRecoveryCodes } from '@/hooks/useRecoveryCodes';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, ShieldCheck, ShieldOff, Trash2, Key } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldOff, Trash2, Key, UserPlus, Crown, AlertTriangle } from 'lucide-react';
 import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 import RecoveryCodes from '@/components/auth/RecoveryCodes';
 import {
@@ -18,6 +20,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const SecuritySettings = () => {
   const { isEnabled, loading, refresh } = useMFA();
@@ -26,6 +35,13 @@ const SecuritySettings = () => {
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [isDisabling, setIsDisabling] = useState(false);
   const [remainingCodes, setRemainingCodes] = useState<number>(0);
+  
+  // Admin transfer states
+  const [transferEmail, setTransferEmail] = useState('');
+  const [transferType, setTransferType] = useState<'full' | 'add'>('add');
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -102,6 +118,111 @@ const SecuritySettings = () => {
     await generateRecoveryCodes();
     const count = await getRemainingCodesCount();
     setRemainingCodes(count);
+  };
+
+  const handleAdminTransfer = async () => {
+    if (!transferEmail.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter an email address',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsTransferring(true);
+    try {
+      // Get current user
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error('Not authenticated');
+      }
+
+      // Find the target user by email in profiles
+      const { data: targetProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', transferEmail.trim().toLowerCase())
+        .single();
+
+      if (profileError || !targetProfile) {
+        toast({
+          title: 'User Not Found',
+          description: 'No user found with this email address. Make sure they have signed up first.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check if target user already has admin role
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', targetProfile.user_id)
+        .eq('role', 'admin')
+        .single();
+
+      if (existingRole) {
+        toast({
+          title: 'Already Admin',
+          description: 'This user is already an admin.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Add admin role to target user
+      const { error: insertError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: targetProfile.user_id,
+          role: 'admin'
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      // If full transfer, remove current user's admin role
+      if (transferType === 'full') {
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('role', 'admin');
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
+        toast({
+          title: 'Ownership Transferred',
+          description: `Admin ownership has been transferred to ${transferEmail}. You will be logged out.`,
+        });
+
+        // Sign out after full transfer
+        setTimeout(async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        toast({
+          title: 'Admin Added',
+          description: `${transferEmail} has been added as an admin.`,
+        });
+      }
+
+      setTransferEmail('');
+      setShowTransferDialog(false);
+    } catch (error: any) {
+      toast({
+        title: 'Transfer Failed',
+        description: error.message || 'Failed to transfer admin rights',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
   if (loading) {
@@ -256,6 +377,123 @@ const SecuritySettings = () => {
           <li>• Authy</li>
           <li>• 1Password</li>
         </ul>
+      </div>
+
+      {/* Admin Ownership Transfer Section */}
+      <div className="bg-terminal-red/5 border border-terminal-red/30 rounded-lg p-6 mt-8">
+        <div className="flex items-start gap-4">
+          <Crown className="w-8 h-8 text-terminal-red mt-1" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-terminal-red flex items-center gap-2">
+              Admin Ownership Transfer
+              <span className="text-xs bg-terminal-red/20 text-terminal-red px-2 py-0.5 rounded">CRITICAL</span>
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              Transfer admin privileges to another user or add a new admin to the system.
+            </p>
+            
+            <div className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="transfer-email" className="text-foreground">User Email</Label>
+                <Input
+                  id="transfer-email"
+                  type="email"
+                  placeholder="Enter user email..."
+                  value={transferEmail}
+                  onChange={(e) => setTransferEmail(e.target.value)}
+                  className="bg-background border-terminal-red/30 focus:border-terminal-red"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-foreground">Transfer Type</Label>
+                <Select value={transferType} onValueChange={(v) => setTransferType(v as 'full' | 'add')}>
+                  <SelectTrigger className="bg-background border-terminal-red/30">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-terminal-red/30">
+                    <SelectItem value="add">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-terminal-green" />
+                        <span>Add Admin (Keep your access)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="full">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-terminal-red" />
+                        <span>Full Transfer (Remove your access)</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {transferType === 'full' && (
+                <div className="bg-terminal-red/10 border border-terminal-red/50 rounded p-3 flex items-start gap-2">
+                  <AlertTriangle className="w-5 h-5 text-terminal-red flex-shrink-0 mt-0.5" />
+                  <p className="text-terminal-red text-sm">
+                    <strong>Warning:</strong> Full transfer will remove your admin access and you will be logged out. This action cannot be undone by you.
+                  </p>
+                </div>
+              )}
+
+              <AlertDialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    className={`${
+                      transferType === 'full' 
+                        ? 'bg-terminal-red hover:bg-terminal-red/80' 
+                        : 'bg-terminal-green hover:bg-terminal-green/80'
+                    } text-black font-semibold`}
+                    disabled={!transferEmail.trim() || isTransferring}
+                  >
+                    {transferType === 'full' ? (
+                      <>
+                        <Crown className="w-4 h-4 mr-2" />
+                        Transfer Ownership
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Add Admin
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-terminal-dark border-terminal-red/50">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-terminal-red flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      {transferType === 'full' ? 'Confirm Full Transfer' : 'Confirm Add Admin'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-muted-foreground">
+                      {transferType === 'full' 
+                        ? `You are about to transfer full admin ownership to ${transferEmail}. You will lose admin access and be logged out.`
+                        : `You are about to add ${transferEmail} as an admin. They will have full admin privileges.`
+                      }
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="border-terminal-green/30 hover:bg-terminal-green/10">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleAdminTransfer}
+                      disabled={isTransferring}
+                      className={`${
+                        transferType === 'full'
+                          ? 'bg-terminal-red hover:bg-terminal-red/80'
+                          : 'bg-terminal-green hover:bg-terminal-green/80'
+                      } text-black`}
+                    >
+                      {isTransferring ? 'Processing...' : 'Confirm'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
