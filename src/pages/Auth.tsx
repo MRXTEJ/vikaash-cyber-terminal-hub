@@ -9,13 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 import TwoFactorVerify from '@/components/auth/TwoFactorVerify';
+import { OTPVerification } from '@/components/auth/OTPVerification';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type AuthStep = 'login' | 'mfa-verify' | 'mfa-setup';
+type AuthStep = 'login' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -23,6 +24,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authStep, setAuthStep] = useState<AuthStep>('login');
+  const [otpVerified, setOtpVerified] = useState(false);
   const { signIn, signUp, user, loading, signOut } = useAuth();
   const { isEnabled, isVerified, loading: mfaLoading, refresh: refreshMFA } = useMFA();
   const navigate = useNavigate();
@@ -34,13 +36,16 @@ const Auth = () => {
       if (isEnabled && !isVerified) {
         // Has 2FA enabled but not verified this session
         setAuthStep('mfa-verify');
-      } else if (isVerified) {
-        // Fully authenticated
-        navigate('/admin');
+      } else if (isVerified || !isEnabled) {
+        // After 2FA verification or if 2FA not enabled, require OTP
+        if (!otpVerified) {
+          setAuthStep('otp-verify');
+        } else {
+          navigate('/admin');
+        }
       }
-      // If not enabled, show setup option after login
     }
-  }, [user, loading, mfaLoading, isEnabled, isVerified, navigate]);
+  }, [user, loading, mfaLoading, isEnabled, isVerified, otpVerified, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,27 +104,50 @@ const Auth = () => {
 
   const handleMFAVerified = () => {
     refreshMFA();
-    navigate('/admin');
+    // After MFA verification, require OTP
+    setAuthStep('otp-verify');
   };
 
   const handleMFASetupComplete = () => {
     refreshMFA();
-    navigate('/admin');
+    // After MFA setup, require OTP
+    setAuthStep('otp-verify');
   };
 
   const handleSkipMFA = () => {
+    // If skipping MFA, still require OTP
+    setAuthStep('otp-verify');
+  };
+
+  const handleOTPVerified = () => {
+    setOtpVerified(true);
     navigate('/admin');
   };
 
   const handleCancelMFA = async () => {
     await signOut();
     setAuthStep('login');
+    setOtpVerified(false);
   };
 
   if (loading || mfaLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show OTP verification after 2FA (or if 2FA not enabled)
+  if (authStep === 'otp-verify' && user && !otpVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <OTPVerification
+          userId={user.id}
+          userEmail={user.email || email}
+          onVerified={handleOTPVerified}
+          onCancel={handleCancelMFA}
+        />
       </div>
     );
   }
