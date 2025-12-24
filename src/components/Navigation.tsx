@@ -1,5 +1,7 @@
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { User } from 'lucide-react';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,7 +51,7 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-4 lg:space-x-8">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -61,6 +63,13 @@ const Navigation = () => {
                 {item.label}
               </button>
             ))}
+            <Link
+              to="/auth"
+              className="flex items-center gap-1 text-xs lg:text-sm font-mono text-terminal-green hover:text-terminal-red transition-all duration-300 border border-terminal-green/50 hover:border-terminal-red/50 px-3 py-1 rounded"
+            >
+              <User className="w-3 h-3 lg:w-4 lg:h-4" />
+              Admin
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,6 +98,14 @@ const Navigation = () => {
                   {item.label}
                 </button>
               ))}
+              <Link
+                to="/auth"
+                className="flex items-center gap-2 text-sm font-mono text-terminal-green hover:text-terminal-red transition-all duration-300 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <User className="w-4 h-4" />
+                Admin Login
+              </Link>
             </div>
           </div>
         )}
