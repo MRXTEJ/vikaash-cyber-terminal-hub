@@ -163,7 +163,7 @@ const CertificatesSection = () => {
               {/* Certificate Preview with glowing border */}
               {currentCert.credential_url && (
                 <div className="flex-shrink-0 w-24 sm:w-32">
-                  <div className="p-1 rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_15px_#00ff41,0_0_30px_#00ff41] animate-pulse">
+                  <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41] animate-pulse">
                     {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
                       <img 
                         src={currentCert.credential_url} 
