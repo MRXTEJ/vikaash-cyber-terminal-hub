@@ -94,10 +94,11 @@ const CertificatesManager = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
       toast({
         title: 'Invalid file',
-        description: 'Please upload a PDF file',
+        description: 'Please upload a PDF or image file (JPG, PNG, WebP)',
         variant: 'destructive',
       });
       return;
@@ -117,7 +118,7 @@ const CertificatesManager = () => {
         .getPublicUrl(fileName);
 
       setFormData({ ...formData, credential_url: publicUrl });
-      toast({ title: 'Success', description: 'PDF uploaded successfully' });
+      toast({ title: 'Success', description: 'File uploaded successfully' });
     } catch (error) {
       console.error('Error uploading file:', error);
       toast({
@@ -275,11 +276,11 @@ const CertificatesManager = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Upload Certificate PDF</Label>
+              <Label>Upload Certificate (PDF/JPG/PNG)</Label>
               <div className="flex items-center gap-2">
                 <Input
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp"
                   onChange={handleFileUpload}
                   disabled={uploading}
                   className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-primary file:text-primary-foreground"
