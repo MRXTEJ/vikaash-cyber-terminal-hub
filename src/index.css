@@ -148,6 +148,21 @@
     box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.05);
   }
 
+  /* Red accent for important elements */
+  .danger-text {
+    @apply text-terminal-red;
+    text-shadow: 0 0 10px rgba(255, 0, 64, 0.5);
+  }
+
+  .danger-glow {
+    box-shadow: 0 0 15px rgba(255, 0, 64, 0.3);
+  }
+
+  .warning-badge {
+    @apply bg-terminal-red/20 text-terminal-red border border-terminal-red/50;
+    animation: pulse 2s infinite;
+  }
+
   .hacker-button {
     @apply relative overflow-hidden transition-all duration-300;
   }
