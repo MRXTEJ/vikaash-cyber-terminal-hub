@@ -76,7 +76,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8">
+    <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8">
       {/* 3D Floating Elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 left-4 md:left-10 w-12 md:w-20 h-12 md:h-20 border border-terminal-green rounded-lg animate-float opacity-20"></div>

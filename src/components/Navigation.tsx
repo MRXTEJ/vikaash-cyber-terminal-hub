@@ -23,14 +23,14 @@ const Navigation = () => {
     
     const observerOptions = {
       root: null,
-      rootMargin: '-30% 0px -50% 0px',
+      rootMargin: '-20% 0px -60% 0px',
       threshold: 0
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
+          setActiveSection(entry.target.id || 'home');
         }
       });
     };
@@ -38,8 +38,17 @@ const Navigation = () => {
     const observer = new IntersectionObserver(observerCallback, observerOptions);
 
     sectionIds.forEach((id) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
+      if (id === 'home') {
+        // For home, observe the first section or body
+        const heroSection = document.querySelector('section') || document.body;
+        if (heroSection && !heroSection.id) {
+          heroSection.id = 'home';
+        }
+        if (heroSection) observer.observe(heroSection);
+      } else {
+        const element = document.getElementById(id);
+        if (element) observer.observe(element);
+      }
     });
 
     return () => observer.disconnect();
