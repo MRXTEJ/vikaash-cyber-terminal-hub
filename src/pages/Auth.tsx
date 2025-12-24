@@ -21,13 +21,12 @@ const authSchema = z.object({
 type AuthStep = 'login' | 'verification-choice' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authStep, setAuthStep] = useState<AuthStep>('login');
   const [otpVerified, setOtpVerified] = useState(false);
-  const { signIn, signUp, user, loading, signOut } = useAuth();
+  const { signIn, user, loading, signOut } = useAuth();
   const { isEnabled, isVerified, loading: mfaLoading, refresh: refreshMFA } = useMFA();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -64,33 +63,16 @@ const Auth = () => {
     }
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast({
-            title: 'Login Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          // Refresh MFA status after login
-          await refreshMFA();
-        }
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({
+          title: 'Login Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
       } else {
-        const { error } = await signUp(email, password);
-        if (error) {
-          toast({
-            title: 'Sign Up Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'Account Created',
-            description: 'Your account has been created. Please login.',
-          });
-          setIsLogin(true);
-        }
+        // Refresh MFA status after login
+        await refreshMFA();
       }
     } catch (error) {
       toast({
@@ -268,7 +250,7 @@ const Auth = () => {
               &lt; Admin Access /&gt;
             </h1>
             <p className="text-muted-foreground">
-              {isLogin ? 'Sign in to manage your portfolio' : 'Create an admin account'}
+              Sign in to manage your portfolio
             </p>
           </div>
 
@@ -304,19 +286,9 @@ const Auth = () => {
               disabled={isSubmitting}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {isSubmitting ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
+              {isSubmitting ? 'Processing...' : 'Sign In'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-secondary hover:text-secondary/80 transition-colors"
-            >
-              {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
-            </button>
-          </div>
 
           <div className="mt-6 text-center">
             <button
