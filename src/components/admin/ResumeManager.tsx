@@ -22,9 +22,9 @@ const ResumeManager = () => {
         .from('site_settings')
         .select('file_url')
         .eq('key', 'resume_pdf')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         throw error;
       }
       
@@ -78,7 +78,7 @@ const ResumeManager = () => {
         .from('site_settings')
         .select('id')
         .eq('key', 'resume_pdf')
-        .single();
+        .maybeSingle();
 
       if (existingData) {
         const { error } = await supabase
