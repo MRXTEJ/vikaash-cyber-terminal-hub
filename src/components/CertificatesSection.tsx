@@ -16,6 +16,41 @@ const CertificatesSection = () => {
   const [selectedCert, setSelectedCert] = useState(0);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+
+  const selectedCredentialUrl = certificates[selectedCert]?.credential_url ?? null;
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    const controller = new AbortController();
+
+    const isPdf = !!selectedCredentialUrl && /\.pdf(\?|#|$)/i.test(selectedCredentialUrl);
+
+    if (!isPdf) {
+      setPdfPreviewUrl(null);
+      return () => {
+        controller.abort();
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      };
+    }
+
+    (async () => {
+      try {
+        const res = await fetch(selectedCredentialUrl, { signal: controller.signal });
+        if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
+        const blob = await res.blob();
+        objectUrl = URL.createObjectURL(blob);
+        setPdfPreviewUrl(objectUrl);
+      } catch (e) {
+        setPdfPreviewUrl(null);
+      }
+    })();
+
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [selectedCredentialUrl]);
 
   useEffect(() => {
     fetchCertificates();
@@ -164,28 +199,44 @@ const CertificatesSection = () => {
               {currentCert.credential_url && (
                 <div className="flex-shrink-0 w-32 sm:w-40">
                   <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]">
-                    {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
-                      <img 
-                        src={currentCert.credential_url} 
+                    {/\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url) ? (
+                      <img
+                        src={currentCert.credential_url}
                         alt={currentCert.title}
+                        loading="lazy"
                         className="w-full h-32 sm:h-40 object-cover rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
-                    ) : (
-                      <div 
+                    ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url) ? (
+                      <div
                         className="w-full h-32 sm:h-40 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       >
-                        <iframe
-                          src={`${currentCert.credential_url}#toolbar=0&navpanes=0&scrollbar=0`}
-                          className="w-full h-full pointer-events-none"
-                          title={currentCert.title}
-                        />
+                        {pdfPreviewUrl ? (
+                          <iframe
+                            src={`${pdfPreviewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                            className="w-full h-full pointer-events-none"
+                            title={currentCert.title}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                            <div className="text-terminal-cyan text-2xl">📄</div>
+                            <span className="text-terminal-green text-xs">PDF preview unavailable</span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-center justify-center">
                           <span className="opacity-0 group-hover:opacity-100 text-terminal-green text-xs font-bold transition-opacity">
                             Click to view
                           </span>
                         </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-full h-32 sm:h-40 bg-terminal-dark rounded flex flex-col items-center justify-center cursor-pointer"
+                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                      >
+                        <div className="text-terminal-cyan text-2xl">🔗</div>
+                        <span className="text-terminal-green text-xs">Open link</span>
                       </div>
                     )}
                   </div>
