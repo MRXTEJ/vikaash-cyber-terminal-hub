@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Mail, Phone, ArrowLeft, Loader2, Shield } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, Shield } from 'lucide-react';
 import { useOTP, OTPType } from '@/hooks/useOTP';
 
 interface OTPVerificationProps {
   userId: string;
   userEmail: string;
-  userPhone?: string;
   onVerified: () => void;
   onCancel: () => void;
 }
@@ -18,21 +16,17 @@ interface OTPVerificationProps {
 export const OTPVerification = ({
   userId,
   userEmail,
-  userPhone,
   onVerified,
   onCancel,
 }: OTPVerificationProps) => {
   const { sendOTP, verifyOTP, resetOTP, isSending, isVerifying, otpSent, otpType, resendTimer, canResend } = useOTP();
   const [otpCode, setOtpCode] = useState('');
-  const [phoneInput, setPhoneInput] = useState(userPhone || '');
   const [selectedType, setSelectedType] = useState<OTPType | null>(null);
 
-  const handleSendOTP = async (type: OTPType) => {
-    const destination = type === 'email' ? userEmail : phoneInput;
-    if (!destination) return;
-    
-    setSelectedType(type);
-    await sendOTP(type, destination, userId);
+  const handleSendOTP = async () => {
+    if (!userEmail) return;
+    setSelectedType('email');
+    await sendOTP('email', userEmail, userId);
   };
 
   const handleVerify = async () => {
@@ -47,10 +41,7 @@ export const OTPVerification = ({
   const handleResend = () => {
     if (!canResend) return;
     setOtpCode('');
-    if (selectedType) {
-      const destination = selectedType === 'email' ? userEmail : phoneInput;
-      sendOTP(selectedType, destination, userId);
-    }
+    sendOTP('email', userEmail, userId);
   };
 
   const formatTime = (seconds: number) => {
@@ -70,10 +61,7 @@ export const OTPVerification = ({
             OTP Verification
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            {otpType === 'email' 
-              ? `OTP sent to ${userEmail}`
-              : `OTP sent to ${phoneInput}`
-            }
+            OTP sent to {userEmail}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -146,14 +134,14 @@ export const OTPVerification = ({
           Admin Verification
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Choose an OTP method for additional verification
+          We'll send a verification code to your email
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Email OTP Option */}
         <Button
           variant="outline"
-          onClick={() => handleSendOTP('email')}
+          onClick={() => handleSendOTP()}
           disabled={isSending}
           className="w-full h-auto py-4 justify-start gap-4 border-primary/20 hover:border-primary/50"
         >
@@ -161,42 +149,13 @@ export const OTPVerification = ({
             <Mail className="h-5 w-5 text-primary" />
           </div>
           <div className="text-left">
-            <div className="font-medium">Email OTP</div>
+            <div className="font-medium">Send OTP to Email</div>
             <div className="text-xs text-muted-foreground">{userEmail}</div>
           </div>
           {isSending && selectedType === 'email' && (
             <Loader2 className="h-4 w-4 ml-auto animate-spin" />
           )}
         </Button>
-
-        {/* Phone OTP Option */}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              type="tel"
-              placeholder="+91 9876543210"
-              value={phoneInput}
-              onChange={(e) => setPhoneInput(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              onClick={() => handleSendOTP('phone')}
-              disabled={isSending || !phoneInput}
-              className="gap-2 border-primary/20 hover:border-primary/50"
-            >
-              {isSending && selectedType === 'phone' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Phone className="h-4 w-4" />
-              )}
-              Send
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Enter phone number with country code (e.g., +91...)
-          </p>
-        </div>
 
         <div className="pt-4 border-t border-border">
           <Button
