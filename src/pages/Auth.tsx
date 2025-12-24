@@ -169,7 +169,7 @@ const Auth = () => {
   }
 
   // Show MFA setup option after first login if not enabled
-  if (user && !isEnabled && authStep !== 'mfa-setup') {
+  if (user && !isEnabled && authStep !== 'mfa-setup' && authStep !== 'otp-verify') {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
