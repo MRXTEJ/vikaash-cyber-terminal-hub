@@ -34,10 +34,13 @@ const Auth = () => {
     if (!loading && !mfaLoading && user) {
       // User is logged in, check MFA status
       if (isEnabled && !isVerified) {
-        // Has 2FA enabled but not verified this session
+        // Has 2FA enabled but not verified this session - use authenticator
         setAuthStep('mfa-verify');
-      } else if (isVerified || !isEnabled) {
-        // After 2FA verification or if 2FA not enabled, require OTP
+      } else if (isVerified) {
+        // 2FA verified - go directly to admin (no OTP needed)
+        navigate('/admin');
+      } else if (!isEnabled) {
+        // No 2FA enabled - require OTP verification instead
         if (!otpVerified) {
           setAuthStep('otp-verify');
         } else {
@@ -104,18 +107,18 @@ const Auth = () => {
 
   const handleMFAVerified = () => {
     refreshMFA();
-    // After MFA verification, require OTP
-    setAuthStep('otp-verify');
+    // After MFA verification - go directly to admin
+    navigate('/admin');
   };
 
   const handleMFASetupComplete = () => {
     refreshMFA();
-    // After MFA setup, require OTP
-    setAuthStep('otp-verify');
+    // After MFA setup - go directly to admin
+    navigate('/admin');
   };
 
   const handleSkipMFA = () => {
-    // If skipping MFA, still require OTP
+    // If skipping MFA, require OTP instead
     setAuthStep('otp-verify');
   };
 
