@@ -125,6 +125,36 @@ const CertificatesSection = () => {
               </h3>
             </div>
 
+            {/* Certificate Preview */}
+            {currentCert.credential_url && (
+              <div className="mb-4 sm:mb-6">
+                {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
+                  <div className="relative group">
+                    <img 
+                      src={currentCert.credential_url} 
+                      alt={currentCert.title}
+                      className="w-full h-40 sm:h-48 object-cover rounded-lg border border-terminal-gray cursor-pointer hover:border-terminal-green transition-all duration-300"
+                      onClick={() => handleViewCertificate(currentCert.credential_url)}
+                    />
+                    <div className="absolute inset-0 bg-terminal-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                      <span className="text-terminal-green text-sm">Click to view full size</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    className="w-full h-40 sm:h-48 bg-terminal-gray/30 rounded-lg border border-terminal-gray flex items-center justify-center cursor-pointer hover:border-terminal-green transition-all duration-300"
+                    onClick={() => handleViewCertificate(currentCert.credential_url)}
+                  >
+                    <div className="text-center">
+                      <div className="text-terminal-cyan text-3xl mb-2">📄</div>
+                      <span className="text-terminal-green text-sm">PDF Document</span>
+                      <p className="text-terminal-gray text-xs mt-1">Click to view</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-3 sm:space-y-4">
               <div>
                 <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Issuing Authority:</h4>
