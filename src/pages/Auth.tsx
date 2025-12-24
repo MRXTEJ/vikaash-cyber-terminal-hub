@@ -1,37 +1,51 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useMFA } from '@/hooks/useMFA';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
+import TwoFactorVerify from '@/components/auth/TwoFactorVerify';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+type AuthStep = 'login' | 'mfa-verify' | 'mfa-setup';
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, signUp, user, loading } = useAuth();
+  const [authStep, setAuthStep] = useState<AuthStep>('login');
+  const { signIn, signUp, user, loading, signOut } = useAuth();
+  const { isEnabled, isVerified, loading: mfaLoading, refresh: refreshMFA } = useMFA();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate('/admin');
+    if (!loading && !mfaLoading && user) {
+      // User is logged in, check MFA status
+      if (isEnabled && !isVerified) {
+        // Has 2FA enabled but not verified this session
+        setAuthStep('mfa-verify');
+      } else if (isVerified) {
+        // Fully authenticated
+        navigate('/admin');
+      }
+      // If not enabled, show setup option after login
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, mfaLoading, isEnabled, isVerified, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate input
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
       toast({
@@ -53,11 +67,8 @@ const Auth = () => {
             variant: 'destructive',
           });
         } else {
-          toast({
-            title: 'Success',
-            description: 'Logged in successfully!',
-          });
-          navigate('/admin');
+          // Refresh MFA status after login
+          await refreshMFA();
         }
       } else {
         const { error } = await signUp(email, password);
@@ -86,10 +97,95 @@ const Auth = () => {
     }
   };
 
-  if (loading) {
+  const handleMFAVerified = () => {
+    refreshMFA();
+    navigate('/admin');
+  };
+
+  const handleMFASetupComplete = () => {
+    refreshMFA();
+    navigate('/admin');
+  };
+
+  const handleSkipMFA = () => {
+    navigate('/admin');
+  };
+
+  const handleCancelMFA = async () => {
+    await signOut();
+    setAuthStep('login');
+  };
+
+  if (loading || mfaLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show MFA verification if user has 2FA enabled but not verified this session
+  if (authStep === 'mfa-verify' && user && isEnabled && !isVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg p-8">
+            <TwoFactorVerify 
+              onVerified={handleMFAVerified}
+              onCancel={handleCancelMFA}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show MFA setup option after first login if not enabled
+  if (user && !isEnabled && authStep !== 'mfa-setup') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg p-8 space-y-6">
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-foreground mb-2">Secure Your Account</h2>
+              <p className="text-muted-foreground text-sm">
+                Would you like to enable Two-Factor Authentication for extra security?
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button
+                onClick={() => setAuthStep('mfa-setup')}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Enable 2FA
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleSkipMFA}
+                className="w-full text-muted-foreground"
+              >
+                Skip for now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show MFA setup
+  if (authStep === 'mfa-setup' && user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg p-8">
+            <TwoFactorSetup 
+              onComplete={handleMFASetupComplete}
+              onSkip={handleSkipMFA}
+            />
+          </div>
+        </div>
       </div>
     );
   }
