@@ -17,9 +17,9 @@ const ResumeSection = () => {
         .from('site_settings')
         .select('file_url')
         .eq('key', 'resume_pdf')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching resume:', error);
       }
       
@@ -69,8 +69,20 @@ const ResumeSection = () => {
     }
   ];
 
-  const handleDownloadResume = () => {
+  const handleDownloadResume = async () => {
     if (resumeUrl) {
+      // Log the download activity
+      try {
+        await supabase.from('activity_log').insert({
+          activity_type: 'resume_download',
+          title: 'Resume Downloaded',
+          description: 'Someone downloaded your resume',
+          metadata: { url: resumeUrl },
+        });
+      } catch (error) {
+        console.error('Error logging activity:', error);
+      }
+      
       window.open(resumeUrl, '_blank');
     } else {
       toast({

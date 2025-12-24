@@ -1,6 +1,15 @@
-
 import { useState } from 'react';
 import TerminalWindow from './TerminalWindow';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name too long'),
+  email: z.string().trim().email('Invalid email').max(255, 'Email too long'),
+  subject: z.string().trim().max(200, 'Subject too long').optional(),
+  message: z.string().trim().min(1, 'Message is required').max(2000, 'Message too long'),
+});
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +18,8 @@ const ContactSection = () => {
     subject: '',
     message: ''
   });
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -17,10 +28,57 @@ const ContactSection = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission here
+    
+    // Validate input
+    const result = contactSchema.safeParse(formData);
+    if (!result.success) {
+      toast({
+        title: 'Validation Error',
+        description: result.error.errors[0]?.message || 'Please check your input',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Save message to database
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          name: result.data.name,
+          email: result.data.email,
+          subject: result.data.subject || null,
+          message: result.data.message,
+        });
+
+      if (messageError) throw messageError;
+
+      // Log activity
+      await supabase.from('activity_log').insert({
+        activity_type: 'message',
+        title: 'New Contact Message',
+        description: `Message from ${result.data.name} (${result.data.email})`,
+        metadata: { subject: result.data.subject || 'No subject' },
+      });
+
+      toast({
+        title: 'Message Sent!',
+        description: 'Your message has been delivered successfully.',
+      });
+
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const socialLinks = [
@@ -65,6 +123,7 @@ const ContactSection = () => {
                     onChange={handleInputChange}
                     className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
                     required
+                    maxLength={100}
                   />
                 </div>
 
@@ -79,6 +138,7 @@ const ContactSection = () => {
                     onChange={handleInputChange}
                     className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
                     required
+                    maxLength={255}
                   />
                 </div>
 
@@ -92,7 +152,7 @@ const ContactSection = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
-                    required
+                    maxLength={200}
                   />
                 </div>
 
@@ -107,14 +167,16 @@ const ContactSection = () => {
                     rows={4}
                     className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border resize-none"
                     required
+                    maxLength={2000}
                   ></textarea>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 lg:py-3 rounded glow-border text-xs lg:text-sm"
+                  disabled={submitting}
+                  className="w-full cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 lg:py-3 rounded glow-border text-xs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Execute send_message.sh
+                  {submitting ? 'Sending...' : 'Execute send_message.sh'}
                 </button>
               </form>
             </TerminalWindow>
