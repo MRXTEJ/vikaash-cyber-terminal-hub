@@ -160,23 +160,20 @@ const CertificatesSection = () => {
                 </div>
               </div>
 
-              {/* Certificate Preview - Small with glowing line */}
+              {/* Certificate Preview with glowing border */}
               {currentCert.credential_url && (
-                <div className="flex-shrink-0 flex items-stretch gap-2">
-                  {/* Glowing vertical line */}
-                  <div className="w-1 rounded-full bg-gradient-to-b from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41,0_0_20px_#00ff41] animate-pulse" />
-                  
-                  <div className="w-24 sm:w-32">
+                <div className="flex-shrink-0 w-24 sm:w-32">
+                  <div className="p-1 rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_15px_#00ff41,0_0_30px_#00ff41] animate-pulse">
                     {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
                       <img 
                         src={currentCert.credential_url} 
                         alt={currentCert.title}
-                        className="w-full h-24 sm:h-32 object-cover rounded border border-terminal-gray cursor-pointer hover:border-terminal-green transition-all duration-300"
+                        className="w-full h-24 sm:h-32 object-cover rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
                     ) : (
                       <div 
-                        className="w-full h-24 sm:h-32 bg-terminal-gray/30 rounded border border-terminal-gray flex items-center justify-center cursor-pointer hover:border-terminal-green transition-all duration-300"
+                        className="w-full h-24 sm:h-32 bg-terminal-dark rounded flex items-center justify-center cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       >
                         <div className="text-center">
