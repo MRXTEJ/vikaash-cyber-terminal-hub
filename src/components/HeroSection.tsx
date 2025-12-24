@@ -1,22 +1,65 @@
 import { useState, useEffect } from 'react';
 import TypeWriter from './TypeWriter';
 import TerminalWindow from './TerminalWindow';
+import { supabase } from '@/integrations/supabase/client';
+
+interface HeroData {
+  firstName: string;
+  lastName: string;
+  skills: string[];
+  bio: string;
+  linkedinUrl: string;
+  linkedinUsername: string;
+  specialization: string;
+  status: string;
+}
+
+const defaultHeroData: HeroData = {
+  firstName: 'VIKASH',
+  lastName: 'TRIPATHI',
+  skills: ['Ethical Hacker', 'Cybersecurity Specialist', 'Penetration Tester', 'Security Analyst'],
+  bio: 'Cybersecurity professional with expertise in ethical hacking, penetration testing, and vulnerability assessment. Passionate about securing digital infrastructure and protecting organizations against evolving cyber threats.',
+  linkedinUrl: 'https://www.linkedin.com/in/vikash-tripathi80',
+  linkedinUsername: '/in/vikash-tripathi80',
+  specialization: 'Cybersecurity',
+  status: 'Available for Opportunities',
+};
 
 const HeroSection = () => {
   const [showSecondLine, setShowSecondLine] = useState(false);
   const [showThirdLine, setShowThirdLine] = useState(false);
-
-  const skills = ['Ethical Hacker', 'Cybersecurity Specialist', 'Penetration Tester', 'Security Analyst'];
+  const [heroData, setHeroData] = useState<HeroData>(defaultHeroData);
   const [currentSkill, setCurrentSkill] = useState(0);
+
+  useEffect(() => {
+    fetchHeroData();
+  }, []);
+
+  const fetchHeroData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'hero_data')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data?.value) {
+        setHeroData(JSON.parse(data.value));
+      }
+    } catch (error) {
+      console.error('Error fetching hero data:', error);
+    }
+  };
 
   // Animate through skills
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSkill((prev) => (prev + 1) % skills.length);
+      setCurrentSkill((prev) => (prev + 1) % heroData.skills.length);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [skills.length]);
+  }, [heroData.skills.length]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -26,10 +69,9 @@ const HeroSection = () => {
   };
 
   const downloadResume = () => {
-    // Create a dummy PDF download link
     const link = document.createElement('a');
-    link.href = '#'; // Replace with actual resume PDF URL
-    link.download = 'Vikash_Tripathi_Resume.pdf';
+    link.href = '#';
+    link.download = `${heroData.firstName}_${heroData.lastName}_Resume.pdf`;
     link.click();
   };
 
@@ -62,7 +104,7 @@ const HeroSection = () => {
                 {showSecondLine && (
                   <div className="text-terminal-green">
                     <TypeWriter 
-                      text="Vikash Tripathi - Cybersecurity Expert" 
+                      text={`${heroData.firstName} ${heroData.lastName} - ${heroData.specialization} Expert`}
                       onComplete={() => setShowThirdLine(true)}
                     />
                   </div>
@@ -106,23 +148,21 @@ const HeroSection = () => {
           <div className="text-center lg:text-left space-y-4 lg:space-y-6 order-1 lg:order-2">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2">
-                VIKASH
+                {heroData.firstName}
               </h1>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4">
-                TRIPATHI
+                {heroData.lastName}
               </h2>
               <div className="text-sm sm:text-base lg:text-lg text-white mb-4 lg:mb-6">
                 <span className="text-terminal-red">&gt; </span>
                 <span className="text-terminal-green transition-all duration-500">
-                  {skills[currentSkill]}
+                  {heroData.skills[currentSkill]}
                 </span>
               </div>
             </div>
 
             <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed px-2 lg:px-0">
-              Cybersecurity professional with expertise in ethical hacking, penetration testing, 
-              and vulnerability assessment. Passionate about securing digital infrastructure 
-              and protecting organizations against evolving cyber threats.
+              {heroData.bio}
             </p>
 
             {/* LinkedIn Profile Info */}
@@ -132,21 +172,21 @@ const HeroSection = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-terminal-cyan">LinkedIn:</span>
                   <a 
-                    href="https://www.linkedin.com/in/vikash-tripathi80" 
+                    href={heroData.linkedinUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-terminal-green hover:text-terminal-red transition-colors duration-300 break-all"
                   >
-                    /in/vikash-tripathi80
+                    {heroData.linkedinUsername}
                   </a>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-terminal-cyan">Specialization:</span>
-                  <span className="text-terminal-green">Cybersecurity</span>
+                  <span className="text-terminal-green">{heroData.specialization}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-terminal-cyan">Status:</span>
-                  <span className="text-terminal-red">Available for Opportunities</span>
+                  <span className="text-terminal-red">{heroData.status}</span>
                 </div>
               </div>
             </div>
@@ -165,7 +205,7 @@ const HeroSection = () => {
                 Download Resume
               </button>
               <a 
-                href="https://www.linkedin.com/in/vikash-tripathi80" 
+                href={heroData.linkedinUrl}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm text-center"
