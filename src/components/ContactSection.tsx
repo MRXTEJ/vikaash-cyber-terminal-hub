@@ -138,17 +138,11 @@ const ContactSection = () => {
 
   const trackLinkClick = async (linkName: string, linkUrl: string) => {
     try {
-      // Log activity for link click
       await supabase.from('activity_log').insert({
         activity_type: 'link_click',
         title: `${linkName} Link Clicked`,
         description: `Someone visited your ${linkName} profile`,
         metadata: { url: linkUrl, platform: linkName },
-      });
-
-      // Send email notification
-      await supabase.functions.invoke('notify-link-click', {
-        body: { linkName, linkUrl }
       });
     } catch (error) {
       console.error('Error tracking link click:', error);
