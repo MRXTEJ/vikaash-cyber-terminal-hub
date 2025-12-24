@@ -17,6 +17,43 @@ const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Detect active section on scroll using Intersection Observer
+  useEffect(() => {
+    const sectionIds = ['home', 'about', 'projects', 'certificates', 'resume', 'contact'];
+    
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id || 'home');
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sectionIds.forEach((id) => {
+      if (id === 'home') {
+        // For home, observe the first section or body
+        const heroSection = document.querySelector('section') || document.body;
+        if (heroSection && !heroSection.id) {
+          heroSection.id = 'home';
+        }
+        if (heroSection) observer.observe(heroSection);
+      } else {
+        const element = document.getElementById(id);
+        if (element) observer.observe(element);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
