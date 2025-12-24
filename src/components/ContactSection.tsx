@@ -136,6 +136,25 @@ const ContactSection = () => {
     }
   };
 
+  const trackLinkClick = async (linkName: string, linkUrl: string) => {
+    try {
+      // Log activity for link click
+      await supabase.from('activity_log').insert({
+        activity_type: 'link_click',
+        title: `${linkName} Link Clicked`,
+        description: `Someone visited your ${linkName} profile`,
+        metadata: { url: linkUrl, platform: linkName },
+      });
+
+      // Send email notification
+      await supabase.functions.invoke('notify-link-click', {
+        body: { linkName, linkUrl }
+      });
+    } catch (error) {
+      console.error('Error tracking link click:', error);
+    }
+  };
+
   return (
     <section id="contact" className="py-12 lg:py-20 relative px-4">
       <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
@@ -272,6 +291,7 @@ const ContactSection = () => {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackLinkClick(link.name, link.url)}
                     className="cyber-card border border-terminal-gray hover:border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 p-2 lg:p-4 text-center rounded"
                   >
                     <div className="text-lg lg:text-2xl mb-1 lg:mb-2">{link.icon}</div>
