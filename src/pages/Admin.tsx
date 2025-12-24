@@ -13,10 +13,12 @@ import ActivityManager from '@/components/admin/ActivityManager';
 import HeroManager from '@/components/admin/HeroManager';
 import AboutManager from '@/components/admin/AboutManager';
 import ContactManager from '@/components/admin/ContactManager';
-import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock, UserCircle } from 'lucide-react';
+import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock, UserCircle, Menu } from 'lucide-react';
 import SecuritySettings from '@/components/admin/SecuritySettings';
 import ProfileManager from '@/components/admin/ProfileManager';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const Admin = () => {
   const { user, isAdmin, adminLoading, loading, signOut } = useAuth();
@@ -135,58 +137,133 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-8">
-            <TabsTrigger value="hero" className="text-xs">
-              <User className="w-3 h-3 mr-1 hidden sm:inline" />
-              Hero
-            </TabsTrigger>
-            <TabsTrigger value="about" className="text-xs">
-              <FileText className="w-3 h-3 mr-1 hidden sm:inline" />
-              About
-            </TabsTrigger>
-            <TabsTrigger value="projects" className="text-xs">
-              <Briefcase className="w-3 h-3 mr-1 hidden sm:inline" />
-              Projects
-            </TabsTrigger>
-            <TabsTrigger value="certificates" className="text-xs">
-              <Award className="w-3 h-3 mr-1 hidden sm:inline" />
-              Certificates
-            </TabsTrigger>
-            <TabsTrigger value="resume" className="text-xs">
-              <FileText className="w-3 h-3 mr-1 hidden sm:inline" />
-              Resume
-            </TabsTrigger>
-            <TabsTrigger value="contact" className="text-xs">
-              <Settings className="w-3 h-3 mr-1 hidden sm:inline" />
-              Contact
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="relative text-xs">
-              <Mail className="w-3 h-3 mr-1 hidden sm:inline" />
-              Messages
-              {unreadMessages > 0 && (
-                <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
-                  {unreadMessages}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="relative text-xs">
-              <Bell className="w-3 h-3 mr-1 hidden sm:inline" />
-              Activity
-              {unreadActivity > 0 && (
-                <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
-                  {unreadActivity}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="security" className="text-xs">
-              <Lock className="w-3 h-3 mr-1 hidden sm:inline" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="text-xs">
-              <UserCircle className="w-3 h-3 mr-1 hidden sm:inline" />
-              Profile
-            </TabsTrigger>
-          </TabsList>
+          {/* Mobile Navigation - Dropdown */}
+          <div className="md:hidden mb-6">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hero">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" /> Hero
+                  </div>
+                </SelectItem>
+                <SelectItem value="about">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> About
+                  </div>
+                </SelectItem>
+                <SelectItem value="projects">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" /> Projects
+                  </div>
+                </SelectItem>
+                <SelectItem value="certificates">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4" /> Certificates
+                  </div>
+                </SelectItem>
+                <SelectItem value="resume">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Resume
+                  </div>
+                </SelectItem>
+                <SelectItem value="contact">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" /> Contact
+                  </div>
+                </SelectItem>
+                <SelectItem value="messages">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" /> Messages
+                    {unreadMessages > 0 && (
+                      <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                        {unreadMessages}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="activity">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4" /> Activity
+                    {unreadActivity > 0 && (
+                      <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                        {unreadActivity}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="security">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4" /> Security
+                  </div>
+                </SelectItem>
+                <SelectItem value="profile">
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="w-4 h-4" /> Profile
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tablet & Desktop Navigation - Scrollable Tabs */}
+          <ScrollArea className="hidden md:block w-full mb-8">
+            <TabsList className="inline-flex w-max min-w-full justify-start gap-1 p-1">
+              <TabsTrigger value="hero" className="text-xs px-3">
+                <User className="w-3 h-3 mr-1" />
+                Hero
+              </TabsTrigger>
+              <TabsTrigger value="about" className="text-xs px-3">
+                <FileText className="w-3 h-3 mr-1" />
+                About
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="text-xs px-3">
+                <Briefcase className="w-3 h-3 mr-1" />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger value="certificates" className="text-xs px-3">
+                <Award className="w-3 h-3 mr-1" />
+                Certs
+              </TabsTrigger>
+              <TabsTrigger value="resume" className="text-xs px-3">
+                <FileText className="w-3 h-3 mr-1" />
+                Resume
+              </TabsTrigger>
+              <TabsTrigger value="contact" className="text-xs px-3">
+                <Settings className="w-3 h-3 mr-1" />
+                Contact
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="relative text-xs px-3">
+                <Mail className="w-3 h-3 mr-1" />
+                Messages
+                {unreadMessages > 0 && (
+                  <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                    {unreadMessages}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="relative text-xs px-3">
+                <Bell className="w-3 h-3 mr-1" />
+                Activity
+                {unreadActivity > 0 && (
+                  <Badge variant="destructive" className="ml-1 px-1 py-0 text-[10px]">
+                    {unreadActivity}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="security" className="text-xs px-3">
+                <Lock className="w-3 h-3 mr-1" />
+                Security
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="text-xs px-3">
+                <UserCircle className="w-3 h-3 mr-1" />
+                Profile
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           <TabsContent value="hero">
             <HeroManager />
