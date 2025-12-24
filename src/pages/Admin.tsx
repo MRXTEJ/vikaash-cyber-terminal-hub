@@ -52,6 +52,52 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
+  // Realtime subscription for notifications
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const messagesChannel = supabase
+      .channel('messages-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .subscribe();
+
+    const activityChannel = supabase
+      .channel('activity-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'activity_log' },
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'activity_log' },
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(activityChannel);
+    };
+  }, [isAdmin]);
+
   const fetchUnreadCounts = async () => {
     try {
       const [messagesResult, activityResult] = await Promise.all([
