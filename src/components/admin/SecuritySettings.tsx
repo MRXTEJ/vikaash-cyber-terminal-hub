@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, ShieldCheck, ShieldOff, Trash2, Key, UserPlus, Crown, AlertTriangle } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldOff, Trash2, Key, UserPlus, Crown, AlertTriangle, Users, X } from 'lucide-react';
 import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 import RecoveryCodes from '@/components/auth/RecoveryCodes';
 import {
@@ -42,6 +42,12 @@ const SecuritySettings = () => {
   const [isTransferring, setIsTransferring] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   
+  // Admin list states
+  const [adminList, setAdminList] = useState<Array<{ user_id: string; email: string | null; created_at: string }>>([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(true);
+  const [removingAdmin, setRemovingAdmin] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +55,106 @@ const SecuritySettings = () => {
       getRemainingCodesCount().then(setRemainingCodes);
     }
   }, [isEnabled]);
+
+  useEffect(() => {
+    fetchAdminList();
+    getCurrentUser();
+  }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
+
+  const fetchAdminList = async () => {
+    setLoadingAdmins(true);
+    try {
+      // Get all admin roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, created_at')
+        .eq('role', 'admin');
+
+      if (rolesError) throw rolesError;
+
+      if (roles && roles.length > 0) {
+        // Get profiles for these users
+        const userIds = roles.map(r => r.user_id);
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, email')
+          .in('user_id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Merge data
+        const admins = roles.map(role => {
+          const profile = profiles?.find(p => p.user_id === role.user_id);
+          return {
+            user_id: role.user_id,
+            email: profile?.email || null,
+            created_at: role.created_at
+          };
+        });
+
+        setAdminList(admins);
+      } else {
+        setAdminList([]);
+      }
+    } catch (error) {
+      console.error('Error fetching admin list:', error);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (userId: string, email: string | null) => {
+    if (userId === currentUserId) {
+      toast({
+        title: 'Cannot Remove',
+        description: 'You cannot remove yourself. Use Full Transfer instead.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (adminList.length <= 1) {
+      toast({
+        title: 'Cannot Remove',
+        description: 'At least one admin must remain in the system.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setRemovingAdmin(userId);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', 'admin');
+
+      if (error) throw error;
+
+      toast({
+        title: 'Admin Removed',
+        description: `${email || 'User'} is no longer an admin.`,
+      });
+
+      fetchAdminList();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to remove admin',
+        variant: 'destructive',
+      });
+    } finally {
+      setRemovingAdmin(null);
+    }
+  };
 
   const handleDisable2FA = async () => {
     setIsDisabling(true);
@@ -210,6 +316,7 @@ const SecuritySettings = () => {
           title: 'Admin Added',
           description: `${transferEmail} has been added as an admin.`,
         });
+        fetchAdminList();
       }
 
       setTransferEmail('');
@@ -377,6 +484,90 @@ const SecuritySettings = () => {
           <li>• Authy</li>
           <li>• 1Password</li>
         </ul>
+      </div>
+
+      {/* Current Admins List */}
+      <div className="bg-terminal-green/5 border border-terminal-green/30 rounded-lg p-6 mt-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Users className="w-6 h-6 text-terminal-green" />
+          <h3 className="font-semibold text-terminal-green">Current Admins</h3>
+          <span className="text-xs bg-terminal-green/20 text-terminal-green px-2 py-0.5 rounded">
+            {adminList.length} {adminList.length === 1 ? 'admin' : 'admins'}
+          </span>
+        </div>
+
+        {loadingAdmins ? (
+          <div className="text-muted-foreground text-sm animate-pulse">Loading admins...</div>
+        ) : adminList.length === 0 ? (
+          <div className="text-muted-foreground text-sm">No admins found.</div>
+        ) : (
+          <div className="space-y-2">
+            {adminList.map((admin) => (
+              <div 
+                key={admin.user_id}
+                className="flex items-center justify-between bg-terminal-dark/50 border border-terminal-green/20 rounded-lg p-3 hover:border-terminal-green/40 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-terminal-green/20 flex items-center justify-center">
+                    <Crown className={`w-4 h-4 ${admin.user_id === currentUserId ? 'text-terminal-red' : 'text-terminal-green'}`} />
+                  </div>
+                  <div>
+                    <p className="text-foreground text-sm font-mono">
+                      {admin.email || 'Unknown email'}
+                      {admin.user_id === currentUserId && (
+                        <span className="ml-2 text-xs bg-terminal-red/20 text-terminal-red px-1.5 py-0.5 rounded">YOU</span>
+                      )}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Added: {new Date(admin.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                {admin.user_id !== currentUserId && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-terminal-red hover:bg-terminal-red/10 hover:text-terminal-red"
+                        disabled={removingAdmin === admin.user_id}
+                      >
+                        {removingAdmin === admin.user_id ? (
+                          <span className="animate-pulse">...</span>
+                        ) : (
+                          <X className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-terminal-dark border-terminal-red/50">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-terminal-red flex items-center gap-2">
+                          <AlertTriangle className="w-5 h-5" />
+                          Remove Admin
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground">
+                          Are you sure you want to remove <strong>{admin.email}</strong> as an admin? They will lose all admin privileges.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="border-terminal-green/30 hover:bg-terminal-green/10">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleRemoveAdmin(admin.user_id, admin.email)}
+                          className="bg-terminal-red hover:bg-terminal-red/80 text-black"
+                        >
+                          Remove Admin
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Admin Ownership Transfer Section */}
