@@ -13,8 +13,9 @@ import ActivityManager from '@/components/admin/ActivityManager';
 import HeroManager from '@/components/admin/HeroManager';
 import AboutManager from '@/components/admin/AboutManager';
 import ContactManager from '@/components/admin/ContactManager';
-import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock } from 'lucide-react';
+import { LogOut, Home, Shield, Bell, Mail, User, FileText, Briefcase, Award, Settings, Lock, UserCircle } from 'lucide-react';
 import SecuritySettings from '@/components/admin/SecuritySettings';
+import ProfileManager from '@/components/admin/ProfileManager';
 import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
@@ -134,7 +135,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9 mb-8">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-8">
             <TabsTrigger value="hero" className="text-xs">
               <User className="w-3 h-3 mr-1 hidden sm:inline" />
               Hero
@@ -181,6 +182,10 @@ const Admin = () => {
               <Lock className="w-3 h-3 mr-1 hidden sm:inline" />
               Security
             </TabsTrigger>
+            <TabsTrigger value="profile" className="text-xs">
+              <UserCircle className="w-3 h-3 mr-1 hidden sm:inline" />
+              Profile
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="hero">
@@ -217,6 +222,10 @@ const Admin = () => {
 
           <TabsContent value="security">
             <SecuritySettings />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileManager />
           </TabsContent>
         </Tabs>
       </main>
