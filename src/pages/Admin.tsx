@@ -230,10 +230,11 @@ const Admin = () => {
                     )}
                   </div>
                 </SelectItem>
-                <SelectItem value="security" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
+                <SelectItem value="security" className="text-terminal-red hover:bg-terminal-red/10 font-mono">
                   <div className="flex items-center gap-2">
-                    <span className="text-terminal-cyan">&gt;</span>
-                    <Lock className="w-4 h-4" /> security
+                    <span className="text-terminal-red">&gt;</span>
+                    <Lock className="w-4 h-4 text-terminal-red" /> security
+                    <Badge className="ml-1 px-1 py-0 text-[10px] bg-terminal-red/20 text-terminal-red border border-terminal-red/50">!</Badge>
                   </div>
                 </SelectItem>
                 <SelectItem value="profile" className="text-terminal-green hover:bg-terminal-green/10 font-mono">
@@ -317,10 +318,11 @@ const Admin = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="security" 
-                className="text-xs px-3 font-mono text-terminal-green/70 data-[state=active]:bg-terminal-green/20 data-[state=active]:text-terminal-green data-[state=active]:shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:text-terminal-green hover:bg-terminal-green/10 transition-all duration-200"
+                className="text-xs px-3 font-mono text-terminal-red/70 data-[state=active]:bg-terminal-red/20 data-[state=active]:text-terminal-red data-[state=active]:shadow-[0_0_10px_rgba(255,0,64,0.3)] hover:text-terminal-red hover:bg-terminal-red/10 transition-all duration-200"
               >
                 <Lock className="w-3 h-3 mr-1" />
                 ./sec
+                <span className="ml-1 text-[10px] animate-pulse">⚠</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="profile" 
