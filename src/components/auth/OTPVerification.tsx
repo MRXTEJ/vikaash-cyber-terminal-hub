@@ -22,7 +22,7 @@ export const OTPVerification = ({
   onVerified,
   onCancel,
 }: OTPVerificationProps) => {
-  const { sendOTP, verifyOTP, resetOTP, isSending, isVerifying, otpSent, otpType } = useOTP();
+  const { sendOTP, verifyOTP, resetOTP, isSending, isVerifying, otpSent, otpType, resendTimer, canResend } = useOTP();
   const [otpCode, setOtpCode] = useState('');
   const [phoneInput, setPhoneInput] = useState(userPhone || '');
   const [selectedType, setSelectedType] = useState<OTPType | null>(null);
@@ -45,11 +45,18 @@ export const OTPVerification = ({
   };
 
   const handleResend = () => {
+    if (!canResend) return;
     setOtpCode('');
     if (selectedType) {
       const destination = selectedType === 'email' ? userEmail : phoneInput;
       sendOTP(selectedType, destination, userId);
     }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (otpSent && otpType) {
@@ -64,14 +71,14 @@ export const OTPVerification = ({
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             {otpType === 'email' 
-              ? `OTP ${userEmail} par bheja gaya hai`
-              : `OTP ${phoneInput} par bheja gaya hai`
+              ? `OTP sent to ${userEmail}`
+              : `OTP sent to ${phoneInput}`
             }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center space-y-4">
-            <Label className="text-sm text-muted-foreground">6-digit OTP code enter karein</Label>
+            <Label className="text-sm text-muted-foreground">Enter 6-digit OTP code</Label>
             <InputOTP
               maxLength={6}
               value={otpCode}
@@ -118,10 +125,10 @@ export const OTPVerification = ({
             </button>
             <button
               onClick={handleResend}
-              disabled={isSending}
-              className="text-primary hover:text-primary/80"
+              disabled={!canResend || isSending}
+              className={`${canResend ? 'text-primary hover:text-primary/80' : 'text-muted-foreground cursor-not-allowed'}`}
             >
-              {isSending ? 'Sending...' : 'Resend OTP'}
+              {isSending ? 'Sending...' : canResend ? 'Resend OTP' : `Resend in ${formatTime(resendTimer)}`}
             </button>
           </div>
         </CardContent>
@@ -139,7 +146,7 @@ export const OTPVerification = ({
           Admin Verification
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Additional verification ke liye OTP method choose karein
+          Choose an OTP method for additional verification
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -187,7 +194,7 @@ export const OTPVerification = ({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Phone number with country code enter karein (e.g., +91...)
+            Enter phone number with country code (e.g., +91...)
           </p>
         </div>
 
