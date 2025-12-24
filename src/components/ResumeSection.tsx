@@ -1,7 +1,34 @@
-
+import { useState, useEffect } from 'react';
 import TerminalWindow from './TerminalWindow';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ResumeSection = () => {
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchResumeUrl();
+  }, []);
+
+  const fetchResumeUrl = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('file_url')
+        .eq('key', 'resume_pdf')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching resume:', error);
+      }
+      
+      setResumeUrl(data?.file_url || null);
+    } catch (error) {
+      console.error('Error fetching resume:', error);
+    }
+  };
+
   const experience = [
     {
       title: 'Junior Security Analyst',
@@ -43,14 +70,15 @@ const ResumeSection = () => {
   ];
 
   const handleDownloadResume = () => {
-    // Create a dummy PDF download
-    const link = document.createElement('a');
-    link.href = '#'; // Replace with actual resume PDF URL
-    link.download = 'Vikash_Tripathi_Resume.pdf';
-    link.click();
-    
-    // Show a message since we don't have an actual PDF
-    alert('Resume download will start shortly. Please contact for the actual PDF file.');
+    if (resumeUrl) {
+      window.open(resumeUrl, '_blank');
+    } else {
+      toast({
+        title: 'Resume Not Available',
+        description: 'Resume PDF has not been uploaded yet.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleEmailResume = () => {
@@ -111,7 +139,7 @@ const ResumeSection = () => {
                 {education.map((edu, index) => (
                   <div key={index} className="border-l-2 border-terminal-cyan pl-4">
                     <h3 className="text-terminal-green text-lg font-bold">{edu.degree}</h3>
-                    <p className="text-white">{edu.institution}</p>
+                    <p className="text-foreground">{edu.institution}</p>
                     <div className="flex justify-between">
                       <p className="text-gray-400 text-sm">{edu.year}</p>
                       <p className="text-terminal-cyan text-sm">{edu.grade}</p>
@@ -131,10 +159,15 @@ const ResumeSection = () => {
               <div className="space-y-4">
                 <button 
                   onClick={handleDownloadResume}
-                  className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-8 py-3 rounded-lg w-full glow-border"
+                  className={`cyber-card border transition-all duration-300 px-8 py-3 rounded-lg w-full glow-border ${
+                    resumeUrl 
+                      ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark' 
+                      : 'border-gray-500 opacity-50 cursor-not-allowed'
+                  }`}
+                  disabled={!resumeUrl}
                 >
                   <span className="mr-2">📄</span>
-                  Download PDF Resume
+                  {resumeUrl ? 'Download PDF Resume' : 'Resume Not Available'}
                 </button>
                 <button 
                   onClick={handleEmailResume}
