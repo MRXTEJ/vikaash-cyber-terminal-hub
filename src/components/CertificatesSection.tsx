@@ -125,67 +125,64 @@ const CertificatesSection = () => {
               </h3>
             </div>
 
-            {/* Certificate Preview */}
-            {currentCert.credential_url && (
-              <div className="mb-4 sm:mb-6">
-                {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
-                  <div className="relative group">
+            <div className="flex gap-4">
+              {/* Text Content */}
+              <div className="flex-1 space-y-3 sm:space-y-4">
+                <div>
+                  <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Issuing Authority:</h4>
+                  <p className="text-white text-sm sm:text-base">{currentCert.issuer}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Date:</h4>
+                  <p className="text-white text-sm sm:text-base">{currentCert.date}</p>
+                </div>
+
+                {currentCert.description && (
+                  <div>
+                    <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Description:</h4>
+                    <p className="text-gray-300 text-sm sm:text-base">{currentCert.description}</p>
+                  </div>
+                )}
+
+                <div className="pt-2 sm:pt-4">
+                  <button 
+                    onClick={() => handleViewCertificate(currentCert.credential_url)}
+                    className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded w-full text-sm sm:text-base ${
+                      currentCert.credential_url 
+                        ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
+                        : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                    }`}
+                    disabled={!currentCert.credential_url}
+                  >
+                    View Certificate
+                  </button>
+                </div>
+              </div>
+
+              {/* Certificate Preview - Small */}
+              {currentCert.credential_url && (
+                <div className="flex-shrink-0 w-24 sm:w-32">
+                  {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
                     <img 
                       src={currentCert.credential_url} 
                       alt={currentCert.title}
-                      className="w-full h-40 sm:h-48 object-cover rounded-lg border border-terminal-gray cursor-pointer hover:border-terminal-green transition-all duration-300"
+                      className="w-full h-24 sm:h-32 object-cover rounded border border-terminal-gray cursor-pointer hover:border-terminal-green transition-all duration-300"
                       onClick={() => handleViewCertificate(currentCert.credential_url)}
                     />
-                    <div className="absolute inset-0 bg-terminal-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
-                      <span className="text-terminal-green text-sm">Click to view full size</span>
+                  ) : (
+                    <div 
+                      className="w-full h-24 sm:h-32 bg-terminal-gray/30 rounded border border-terminal-gray flex items-center justify-center cursor-pointer hover:border-terminal-green transition-all duration-300"
+                      onClick={() => handleViewCertificate(currentCert.credential_url)}
+                    >
+                      <div className="text-center">
+                        <div className="text-terminal-cyan text-2xl">📄</div>
+                        <span className="text-terminal-green text-xs">PDF</span>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div 
-                    className="w-full h-40 sm:h-48 bg-terminal-gray/30 rounded-lg border border-terminal-gray flex items-center justify-center cursor-pointer hover:border-terminal-green transition-all duration-300"
-                    onClick={() => handleViewCertificate(currentCert.credential_url)}
-                  >
-                    <div className="text-center">
-                      <div className="text-terminal-cyan text-3xl mb-2">📄</div>
-                      <span className="text-terminal-green text-sm">PDF Document</span>
-                      <p className="text-terminal-gray text-xs mt-1">Click to view</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-3 sm:space-y-4">
-              <div>
-                <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Issuing Authority:</h4>
-                <p className="text-white text-sm sm:text-base">{currentCert.issuer}</p>
-              </div>
-
-              <div>
-                <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Date:</h4>
-                <p className="text-white text-sm sm:text-base">{currentCert.date}</p>
-              </div>
-
-              {currentCert.description && (
-                <div>
-                  <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Description:</h4>
-                  <p className="text-gray-300 text-sm sm:text-base">{currentCert.description}</p>
+                  )}
                 </div>
               )}
-
-              <div className="pt-2 sm:pt-4">
-                <button 
-                  onClick={() => handleViewCertificate(currentCert.credential_url)}
-                  className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded w-full text-sm sm:text-base ${
-                    currentCert.credential_url 
-                      ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
-                      : 'border-gray-500 text-gray-500 cursor-not-allowed'
-                  }`}
-                  disabled={!currentCert.credential_url}
-                >
-                  View Certificate
-                </button>
-              </div>
             </div>
           </div>
         </div>
