@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Copy, Check } from 'lucide-react';
+import { useRecoveryCodes } from '@/hooks/useRecoveryCodes';
+import RecoveryCodes from './RecoveryCodes';
 
 interface TwoFactorSetupProps {
   onComplete: () => void;
@@ -19,7 +21,9 @@ const TwoFactorSetup = ({ onComplete, onSkip }: TwoFactorSetupProps) => {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const { toast } = useToast();
+  const { codes, generateRecoveryCodes } = useRecoveryCodes();
 
   useEffect(() => {
     enrollMFA();
@@ -98,11 +102,14 @@ const TwoFactorSetup = ({ onComplete, onSkip }: TwoFactorSetupProps) => {
         return;
       }
 
+      // Generate recovery codes after successful 2FA setup
+      await generateRecoveryCodes();
+      setShowRecoveryCodes(true);
+
       toast({
         title: '2FA Enabled',
-        description: 'Two-factor authentication has been enabled for your account',
+        description: 'Two-factor authentication has been enabled. Save your recovery codes!',
       });
-      onComplete();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -125,6 +132,15 @@ const TwoFactorSetup = ({ onComplete, onSkip }: TwoFactorSetupProps) => {
       <div className="flex items-center justify-center p-8">
         <div className="text-primary animate-pulse">Setting up 2FA...</div>
       </div>
+    );
+  }
+
+  if (showRecoveryCodes && codes.length > 0) {
+    return (
+      <RecoveryCodes 
+        codes={codes} 
+        onClose={onComplete}
+      />
     );
   }
 

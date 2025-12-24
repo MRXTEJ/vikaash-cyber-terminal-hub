@@ -176,6 +176,33 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          id: string
+          used: boolean
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          id?: string
+          used?: boolean
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          id?: string
+          used?: boolean
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
@@ -234,6 +261,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      verify_recovery_code: {
+        Args: { _code: string; _user_id: string }
         Returns: boolean
       }
     }
