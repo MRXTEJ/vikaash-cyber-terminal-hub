@@ -27,7 +27,11 @@ interface Message {
   created_at: string;
 }
 
-const MessagesManager = () => {
+interface MessagesManagerProps {
+  onUnreadChange?: () => void;
+}
+
+const MessagesManager = ({ onUnreadChange }: MessagesManagerProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -69,6 +73,7 @@ const MessagesManager = () => {
       
       setMessages(messages.map(m => m.id === id ? { ...m, is_read: true } : m));
       toast({ title: 'Marked as read' });
+      onUnreadChange?.();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -79,6 +84,7 @@ const MessagesManager = () => {
   };
 
   const deleteMessage = async (id: string) => {
+    const wasUnread = messages.find(m => m.id === id)?.is_read === false;
     try {
       const { error } = await supabase
         .from('messages')
@@ -90,6 +96,9 @@ const MessagesManager = () => {
       setMessages(messages.filter(m => m.id !== id));
       setSelectedMessage(null);
       toast({ title: 'Message deleted' });
+      if (wasUnread) {
+        onUnreadChange?.();
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
