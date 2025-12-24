@@ -162,23 +162,29 @@ const CertificatesSection = () => {
 
               {/* Certificate Preview with glowing border */}
               {currentCert.credential_url && (
-                <div className="flex-shrink-0 w-24 sm:w-32">
-                  <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41] animate-pulse">
+                <div className="flex-shrink-0 w-32 sm:w-40">
+                  <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]">
                     {currentCert.credential_url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
                       <img 
                         src={currentCert.credential_url} 
                         alt={currentCert.title}
-                        className="w-full h-24 sm:h-32 object-cover rounded cursor-pointer"
+                        className="w-full h-32 sm:h-40 object-cover rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
                     ) : (
                       <div 
-                        className="w-full h-24 sm:h-32 bg-terminal-dark rounded flex items-center justify-center cursor-pointer"
+                        className="w-full h-32 sm:h-40 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       >
-                        <div className="text-center">
-                          <div className="text-terminal-cyan text-2xl">📄</div>
-                          <span className="text-terminal-green text-xs">PDF</span>
+                        <iframe
+                          src={`${currentCert.credential_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                          className="w-full h-full pointer-events-none"
+                          title={currentCert.title}
+                        />
+                        <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-center justify-center">
+                          <span className="opacity-0 group-hover:opacity-100 text-terminal-green text-xs font-bold transition-opacity">
+                            Click to view
+                          </span>
                         </div>
                       </div>
                     )}
