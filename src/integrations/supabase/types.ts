@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      certificates: {
+        Row: {
+          created_at: string
+          credential_url: string | null
+          date: string
+          description: string | null
+          display_order: number | null
+          id: string
+          issuer: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credential_url?: string | null
+          date: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          issuer: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credential_url?: string | null
+          date?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          issuer?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          live_url: string | null
+          source_url: string | null
+          tech_stack: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          display_order?: number | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          live_url?: string | null
+          source_url?: string | null
+          tech_stack?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          live_url?: string | null
+          source_url?: string | null
+          tech_stack?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
