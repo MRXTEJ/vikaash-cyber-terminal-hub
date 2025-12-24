@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { Shield, Mail, Smartphone, ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 import TwoFactorVerify from '@/components/auth/TwoFactorVerify';
 import { OTPVerification } from '@/components/auth/OTPVerification';
@@ -16,7 +18,7 @@ const authSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type AuthStep = 'login' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
+type AuthStep = 'login' | 'verification-choice' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -33,22 +35,18 @@ const Auth = () => {
   useEffect(() => {
     if (!loading && !mfaLoading && user) {
       // User is logged in, check MFA status
-      if (isEnabled && !isVerified) {
-        // Has 2FA enabled but not verified this session - use authenticator
-        setAuthStep('mfa-verify');
-      } else if (isVerified) {
-        // 2FA verified - go directly to admin (no OTP needed)
+      if (isVerified) {
+        // Already verified via MFA - go to admin
         navigate('/admin');
-      } else if (!isEnabled) {
-        // No 2FA enabled - require OTP verification instead
-        if (!otpVerified) {
-          setAuthStep('otp-verify');
-        } else {
-          navigate('/admin');
-        }
+      } else if (otpVerified) {
+        // Already verified via OTP - go to admin
+        navigate('/admin');
+      } else if (authStep === 'login') {
+        // Show verification choice screen
+        setAuthStep('verification-choice');
       }
     }
-  }, [user, loading, mfaLoading, isEnabled, isVerified, otpVerified, navigate]);
+  }, [user, loading, mfaLoading, isVerified, otpVerified, navigate, authStep]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,11 +115,6 @@ const Auth = () => {
     navigate('/admin');
   };
 
-  const handleSkipMFA = () => {
-    // If skipping MFA, require OTP instead
-    setAuthStep('otp-verify');
-  };
-
   const handleOTPVerified = () => {
     setOtpVerified(true);
     navigate('/admin');
@@ -141,7 +134,86 @@ const Auth = () => {
     );
   }
 
-  // Show OTP verification after 2FA (or if 2FA not enabled)
+  // Show verification choice screen
+  if (authStep === 'verification-choice' && user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-primary/20">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10 w-fit">
+              <Shield className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-bold text-foreground">
+              Verify Your Identity
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Choose a verification method to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Authenticator App Option - only show if enabled */}
+            {isEnabled && (
+              <Button
+                variant="outline"
+                onClick={() => setAuthStep('mfa-verify')}
+                className="w-full h-auto py-4 justify-start gap-4 border-primary/20 hover:border-primary/50"
+              >
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Smartphone className="h-5 w-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium">Authenticator App</div>
+                  <div className="text-xs text-muted-foreground">Use your authenticator app code</div>
+                </div>
+              </Button>
+            )}
+
+            {/* Email OTP Option */}
+            <Button
+              variant="outline"
+              onClick={() => setAuthStep('otp-verify')}
+              className="w-full h-auto py-4 justify-start gap-4 border-primary/20 hover:border-primary/50"
+            >
+              <div className="p-2 rounded-full bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium">Email OTP</div>
+                <div className="text-xs text-muted-foreground">{user.email}</div>
+              </div>
+            </Button>
+
+            {/* Setup 2FA option if not enabled */}
+            {!isEnabled && (
+              <div className="pt-4 border-t border-border">
+                <Button
+                  variant="ghost"
+                  onClick={() => setAuthStep('mfa-setup')}
+                  className="w-full text-muted-foreground"
+                >
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Setup Authenticator App
+                </Button>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-border">
+              <Button
+                variant="ghost"
+                onClick={handleCancelMFA}
+                className="w-full text-muted-foreground"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show OTP verification
   if (authStep === 'otp-verify' && user && !otpVerified) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -149,13 +221,13 @@ const Auth = () => {
           userId={user.id}
           userEmail={user.email || email}
           onVerified={handleOTPVerified}
-          onCancel={handleCancelMFA}
+          onCancel={() => setAuthStep('verification-choice')}
         />
       </div>
     );
   }
 
-  // Show MFA verification if user has 2FA enabled but not verified this session
+  // Show MFA verification
   if (authStep === 'mfa-verify' && user && isEnabled && !isVerified) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -163,42 +235,8 @@ const Auth = () => {
           <div className="bg-card border border-border rounded-lg p-8">
             <TwoFactorVerify 
               onVerified={handleMFAVerified}
-              onCancel={handleCancelMFA}
+              onCancel={() => setAuthStep('verification-choice')}
             />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show MFA setup option after first login if not enabled
-  if (user && !isEnabled && authStep !== 'mfa-setup' && authStep !== 'otp-verify') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-lg p-8 space-y-6">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">Secure Your Account</h2>
-              <p className="text-muted-foreground text-sm">
-                Would you like to enable Two-Factor Authentication for extra security?
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Button
-                onClick={() => setAuthStep('mfa-setup')}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Enable 2FA
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={handleSkipMFA}
-                className="w-full text-muted-foreground"
-              >
-                Skip for now
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -213,7 +251,7 @@ const Auth = () => {
           <div className="bg-card border border-border rounded-lg p-8">
             <TwoFactorSetup 
               onComplete={handleMFASetupComplete}
-              onSkip={handleSkipMFA}
+              onSkip={() => setAuthStep('verification-choice')}
             />
           </div>
         </div>
