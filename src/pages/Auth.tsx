@@ -18,7 +18,7 @@ const authSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type AuthStep = 'login' | 'verification-choice' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
+type AuthStep = 'login' | 'forgot-password' | 'verification-choice' | 'mfa-verify' | 'mfa-setup' | 'otp-verify';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -26,7 +26,7 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authStep, setAuthStep] = useState<AuthStep>('login');
   const [otpVerified, setOtpVerified] = useState(false);
-  const { signIn, user, loading, signOut } = useAuth();
+  const { signIn, user, loading, signOut, resetPassword } = useAuth();
   const { isEnabled, isVerified, loading: mfaLoading, refresh: refreshMFA } = useMFA();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -241,6 +241,88 @@ const Auth = () => {
     );
   }
 
+  // Forgot Password Screen
+  if (authStep === 'forgot-password') {
+    const handleForgotPassword = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!email) {
+        toast({
+          title: 'Error',
+          description: 'Please enter your email address',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setIsSubmitting(true);
+      const { error } = await resetPassword(email);
+      setIsSubmitting(false);
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Email Sent',
+          description: 'Check your email for password reset instructions',
+        });
+        setAuthStep('login');
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-primary glow-text mb-2">
+                Reset Password
+              </h1>
+              <p className="text-muted-foreground">
+                Enter your email to receive reset instructions
+              </p>
+            </div>
+
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-foreground">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  required
+                  className="bg-muted border-border text-foreground"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setAuthStep('login')}
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm flex items-center justify-center gap-1 mx-auto"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -269,7 +351,16 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-foreground">Password</Label>
+                <button
+                  type="button"
+                  onClick={() => setAuthStep('forgot-password')}
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <Input
                 id="password"
                 type="password"
