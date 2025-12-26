@@ -12,8 +12,6 @@ interface Certificate {
   display_order: number;
 }
 
-const POLL_INTERVAL_MS = 30_000;
-
 const CertificatesSection = () => {
   const [selectedCert, setSelectedCert] = useState(0);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -78,24 +76,26 @@ const CertificatesSection = () => {
     fetchCertificates();
   }, [fetchCertificates]);
 
-  // Refresh when user returns to the tab/window (common after admin updates)
+  // Realtime subscription for instant updates
   useEffect(() => {
-    const onFocus = () => fetchCertificates();
-    const onVisibility = () => {
-      if (!document.hidden) fetchCertificates();
-    };
-
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibility);
-
-    const interval = window.setInterval(() => {
-      if (!document.hidden) fetchCertificates();
-    }, POLL_INTERVAL_MS);
+    const channel = supabase
+      .channel('certificates-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'certificates',
+        },
+        () => {
+          // Refetch on any change (INSERT, UPDATE, DELETE)
+          fetchCertificates();
+        }
+      )
+      .subscribe();
 
     return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, [fetchCertificates]);
 
