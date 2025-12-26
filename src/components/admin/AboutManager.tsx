@@ -78,7 +78,7 @@ const AboutManager = () => {
       if (existing) {
         const { error } = await supabase
           .from('site_settings')
-          .update({ value: JSON.stringify(formData) })
+          .update({ value: JSON.stringify(formData), updated_at: new Date().toISOString() })
           .eq('key', 'about_data');
         if (error) throw error;
       } else {
