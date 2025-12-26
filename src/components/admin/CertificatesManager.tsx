@@ -347,26 +347,52 @@ const CertificatesManager = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Credential URL (or upload PDF)</Label>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Credential Link (optional - for external verification)</Label>
               <Input
                 value={formData.credential_url}
                 onChange={(e) => setFormData({ ...formData, credential_url: e.target.value })}
-                placeholder="https://..."
+                placeholder="https://verify.example.com/certificate/..."
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Upload Certificate (PDF/JPG/PNG)</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.webp"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-primary file:text-primary-foreground"
-                />
-                {uploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Upload Certificate File (PDF or Image)</Label>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-primary file:text-primary-foreground"
+                  />
+                  {uploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
+                </div>
+                
+                {/* Preview of uploaded file */}
+                {formData.thumbnail_url && (
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border">
+                    <img 
+                      src={formData.thumbnail_url} 
+                      alt="Preview" 
+                      className="w-16 h-20 object-cover rounded border border-border"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground font-medium">File uploaded</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-xs">
+                        {formData.credential_url?.split('/').pop() || 'Certificate file'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, credential_url: '', thumbnail_url: '' })}
+                        className="text-xs text-destructive hover:underline mt-1"
+                      >
+                        Remove file
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
