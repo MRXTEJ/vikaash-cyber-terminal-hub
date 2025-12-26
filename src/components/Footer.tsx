@@ -1,21 +1,7 @@
-import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/hooks/useTheme';
 
 const Footer = () => {
   const { theme } = useTheme();
-
-  const trackLinkClick = async (linkName: string, linkUrl: string) => {
-    try {
-      await supabase.from('activity_log').insert({
-        activity_type: 'link_click',
-        title: `${linkName} Link Clicked`,
-        description: `Someone visited your ${linkName} profile`,
-        metadata: { url: linkUrl, platform: linkName, source: 'footer' },
-      });
-    } catch (error) {
-      console.error('Error tracking link click:', error);
-    }
-  };
 
   const socialLinks = [
     { name: 'LinkedIn', url: '#' },
@@ -39,7 +25,7 @@ const Footer = () => {
               <a 
                 key={link.name}
                 href={link.url} 
-                onClick={() => trackLinkClick(link.name, link.url)}
+                
                 target={link.url.startsWith('mailto:') ? undefined : '_blank'}
                 rel="noopener noreferrer"
                 className={`transition-colors ${theme === 'dark' ? 'text-terminal-cyan hover:text-terminal-green' : 'text-secondary hover:text-primary'}`}
