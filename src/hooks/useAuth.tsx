@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,9 +12,15 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Refresh session 5 minutes before expiry
+const SESSION_REFRESH_MARGIN = 5 * 60 * 1000;
+// Minimum interval between refresh attempts
+const MIN_REFRESH_INTERVAL = 60 * 1000;
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -22,6 +28,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastRefreshRef = useRef<number>(0);
+
+  const refreshSession = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
+      return;
+    }
+    
+    try {
+      lastRefreshRef.current = now;
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Session refresh failed:', error);
+      } else if (data.session) {
+        console.log('Session refreshed successfully');
+      }
+    } catch (error) {
+      console.error('Session refresh error:', error);
+    }
+  }, []);
+
+  const scheduleSessionRefresh = useCallback((session: Session | null) => {
+    // Clear any existing timeout
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+
+    if (!session?.expires_at) return;
+
+    const expiresAt = session.expires_at * 1000; // Convert to milliseconds
+    const now = Date.now();
+    const timeUntilExpiry = expiresAt - now;
+    const refreshIn = Math.max(timeUntilExpiry - SESSION_REFRESH_MARGIN, MIN_REFRESH_INTERVAL);
+
+    if (timeUntilExpiry > 0) {
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshSession();
+      }, refreshIn);
+    }
+  }, [refreshSession]);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -30,6 +78,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Schedule next refresh
+      scheduleSessionRefresh(session);
 
       // Defer admin check with setTimeout to prevent deadlock
       if (session?.user) {
@@ -47,6 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      scheduleSessionRefresh(session);
       if (session?.user) {
         setAdminLoading(true);
         checkAdminRole(session.user.id);
@@ -56,8 +108,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [scheduleSessionRefresh]);
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -115,7 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, adminLoading, loading, signIn, signUp, signOut, resetPassword }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, adminLoading, loading, signIn, signUp, signOut, resetPassword, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
