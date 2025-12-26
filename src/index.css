@@ -38,6 +38,37 @@
 
     --radius: 0.5rem;
   }
+
+  /* Light theme - clean terminal aesthetic */
+  .light {
+    --background: 60 10% 96%;
+    --foreground: 140 60% 20%;
+
+    --card: 60 10% 98%;
+    --card-foreground: 140 60% 20%;
+
+    --popover: 60 10% 98%;
+    --popover-foreground: 140 60% 20%;
+
+    --primary: 140 70% 35%;
+    --primary-foreground: 60 10% 98%;
+
+    --secondary: 180 60% 40%;
+    --secondary-foreground: 60 10% 98%;
+
+    --muted: 60 10% 90%;
+    --muted-foreground: 140 30% 40%;
+
+    --accent: 180 60% 40%;
+    --accent-foreground: 60 10% 98%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 60 10% 98%;
+
+    --border: 140 20% 80%;
+    --input: 140 20% 85%;
+    --ring: 140 70% 35%;
+  }
 }
 
 @layer base {
@@ -46,8 +77,18 @@
   }
 
   body {
-    @apply bg-terminal-darker text-terminal-green font-terminal;
+    @apply bg-background text-foreground font-terminal transition-colors duration-300;
     overflow-x: hidden;
+  }
+
+  /* Dark mode terminal colors */
+  :root body {
+    @apply bg-terminal-darker text-terminal-green;
+  }
+
+  /* Light mode body */
+  .light body {
+    @apply bg-background text-foreground;
   }
 
   /* Custom scrollbar */
@@ -56,15 +97,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-terminal-dark;
+    @apply bg-muted;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-terminal-red rounded;
+    @apply bg-primary rounded;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-terminal-green;
+    @apply bg-secondary;
   }
 }
 
