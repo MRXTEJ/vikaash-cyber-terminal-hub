@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Project {
   id: string;
@@ -17,6 +18,7 @@ const ProjectsSection = () => {
   const [selectedProject, setSelectedProject] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -82,7 +84,7 @@ const ProjectsSection = () => {
       <section id="projects" className="py-12 sm:py-16 lg:py-20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <p className="text-terminal-green animate-pulse text-sm sm:text-base">Loading projects...</p>
+            <p className={`animate-pulse text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Loading projects...</p>
           </div>
         </div>
       </section>
@@ -94,10 +96,10 @@ const ProjectsSection = () => {
       <section id="projects" className="py-12 sm:py-16 lg:py-20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-terminal-green glow-text mb-4">
+            <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
               &lt; Projects /&gt;
             </h2>
-            <p className="text-terminal-cyan text-sm sm:text-base">No projects available yet.</p>
+            <p className={`text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>No projects available yet.</p>
           </div>
         </div>
       </section>
@@ -110,10 +112,10 @@ const ProjectsSection = () => {
     <section id="projects" className="py-12 sm:py-16 lg:py-20 relative">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-terminal-green glow-text mb-2 sm:mb-4">
+          <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
             &lt; Projects /&gt;
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-terminal-cyan">
+          <p className={`text-base sm:text-lg lg:text-xl ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>
             Security research and development
           </p>
         </div>
@@ -129,8 +131,8 @@ const ProjectsSection = () => {
                     onClick={() => setSelectedProject(index)}
                     className={`cursor-pointer p-2 rounded transition-all duration-300 ${
                       selectedProject === index 
-                        ? 'bg-terminal-green text-terminal-dark' 
-                        : 'hover:bg-terminal-gray'
+                        ? theme === 'dark' ? 'bg-terminal-green text-terminal-dark' : 'bg-primary text-primary-foreground'
+                        : theme === 'dark' ? 'hover:bg-terminal-gray' : 'hover:bg-muted'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -138,7 +140,7 @@ const ProjectsSection = () => {
                         {String(index + 1).padStart(2, '0')}. {project.title}
                       </span>
                       {project.featured && (
-                        <span className="text-xs px-2 py-1 rounded bg-terminal-red text-white flex-shrink-0">
+                        <span className={`text-xs px-2 py-1 rounded flex-shrink-0 ${theme === 'dark' ? 'bg-terminal-red text-white' : 'bg-destructive text-destructive-foreground'}`}>
                           Featured
                         </span>
                       )}
@@ -151,29 +153,33 @@ const ProjectsSection = () => {
 
           {/* Project Details */}
           <div className="lg:col-span-2">
-            <div className="cyber-card h-full">
+            <div className={`cyber-card h-full ${theme === 'light' ? 'bg-card border-border' : ''}`}>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-                <h3 className="text-lg sm:text-xl lg:text-2xl text-terminal-cyan glow-text">
+                <h3 className={`text-lg sm:text-xl lg:text-2xl ${theme === 'dark' ? 'text-terminal-cyan glow-text' : 'text-secondary font-semibold'}`}>
                   {currentProject.title}
                 </h3>
                 {currentProject.featured && (
-                  <span className="px-3 py-1 rounded text-xs bg-terminal-red text-white">
+                  <span className={`px-3 py-1 rounded text-xs ${theme === 'dark' ? 'bg-terminal-red text-white' : 'bg-destructive text-destructive-foreground'}`}>
                     Featured
                   </span>
                 )}
               </div>
 
-              <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
+              <p className={`mb-4 sm:mb-6 text-sm sm:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-muted-foreground'}`}>
                 {currentProject.description}
               </p>
 
               <div className="mb-4 sm:mb-6">
-                <h4 className="text-terminal-green mb-2 sm:mb-3 text-sm sm:text-base">Technologies Used:</h4>
+                <h4 className={`mb-2 sm:mb-3 text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Technologies Used:</h4>
                 <div className="flex flex-wrap gap-2">
                   {currentProject.tech_stack.map((tech, index) => (
                     <span 
                       key={index}
-                      className="bg-terminal-gray border border-terminal-cyan px-2 sm:px-3 py-1 rounded text-xs sm:text-sm"
+                      className={`border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm ${
+                        theme === 'dark' 
+                          ? 'bg-terminal-gray border-terminal-cyan' 
+                          : 'bg-muted border-secondary/30 text-foreground'
+                      }`}
                     >
                       {tech}
                     </span>
@@ -186,8 +192,10 @@ const ProjectsSection = () => {
                   onClick={() => handleViewCode(currentProject.source_url)}
                   className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded text-sm sm:text-base ${
                     currentProject.source_url 
-                      ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
-                      : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                      ? theme === 'dark' 
+                        ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
+                        : 'border-primary hover:bg-primary hover:text-primary-foreground bg-card'
+                      : 'border-muted-foreground/30 text-muted-foreground cursor-not-allowed'
                   }`}
                   disabled={!currentProject.source_url}
                 >
@@ -197,8 +205,10 @@ const ProjectsSection = () => {
                   onClick={() => handleLiveDemo(currentProject.live_url)}
                   className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded text-sm sm:text-base ${
                     currentProject.live_url 
-                      ? 'border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark'
-                      : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                      ? theme === 'dark' 
+                        ? 'border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark'
+                        : 'border-secondary hover:bg-secondary hover:text-secondary-foreground bg-card'
+                      : 'border-muted-foreground/30 text-muted-foreground cursor-not-allowed'
                   }`}
                   disabled={!currentProject.live_url}
                 >

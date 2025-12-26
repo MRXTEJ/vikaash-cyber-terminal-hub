@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import TypeWriter from './TypeWriter';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/useTheme';
 
 interface HeroData {
   firstName: string;
@@ -30,6 +31,7 @@ const HeroSection = () => {
   const [showThirdLine, setShowThirdLine] = useState(false);
   const [heroData, setHeroData] = useState<HeroData>(defaultHeroData);
   const [currentSkill, setCurrentSkill] = useState(0);
+  const { theme } = useTheme();
 
   const fetchHeroData = useCallback(async () => {
     try {
@@ -102,10 +104,10 @@ const HeroSection = () => {
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8">
       {/* 3D Floating Elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-20 left-4 md:left-10 w-12 md:w-20 h-12 md:h-20 border border-terminal-green rounded-lg animate-float opacity-20"></div>
-        <div className="absolute top-32 md:top-40 right-8 md:right-20 w-10 md:w-16 h-10 md:h-16 border border-terminal-cyan rounded-full animate-float opacity-30" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-24 md:bottom-32 left-1/4 w-8 md:w-12 h-8 md:h-12 border border-terminal-red rounded-lg animate-float opacity-25" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-16 md:bottom-20 right-1/3 w-10 md:w-14 h-10 md:h-14 border border-terminal-orange rounded-full animate-float opacity-20" style={{ animationDelay: '0.5s' }}></div>
+        <div className={`absolute top-20 left-4 md:left-10 w-12 md:w-20 h-12 md:h-20 border rounded-lg animate-float opacity-20 ${theme === 'dark' ? 'border-terminal-green' : 'border-primary'}`}></div>
+        <div className={`absolute top-32 md:top-40 right-8 md:right-20 w-10 md:w-16 h-10 md:h-16 border rounded-full animate-float opacity-30 ${theme === 'dark' ? 'border-terminal-cyan' : 'border-secondary'}`} style={{ animationDelay: '1s' }}></div>
+        <div className={`absolute bottom-24 md:bottom-32 left-1/4 w-8 md:w-12 h-8 md:h-12 border rounded-lg animate-float opacity-25 ${theme === 'dark' ? 'border-terminal-red' : 'border-destructive'}`} style={{ animationDelay: '2s' }}></div>
+        <div className={`absolute bottom-16 md:bottom-20 right-1/3 w-10 md:w-14 h-10 md:h-14 border rounded-full animate-float opacity-20 ${theme === 'dark' ? 'border-terminal-orange' : 'border-accent'}`} style={{ animationDelay: '0.5s' }}></div>
       </div>
 
       <div className="container mx-auto px-2 sm:px-4 z-10 max-w-7xl">
@@ -114,18 +116,18 @@ const HeroSection = () => {
           <div className="space-y-4 lg:space-y-6 order-2 lg:order-1">
             <TerminalWindow title="root@cybersec:~#">
               <div className="space-y-1 text-xs sm:text-sm">
-                <div className="text-terminal-green">
-                  <span className="text-terminal-red">root@cybersec</span>
-                  <span className="text-white">:</span>
-                  <span className="text-blue-400">~</span>
-                  <span className="text-terminal-red"># </span>
+                <div className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>root@cybersec</span>
+                  <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>:</span>
+                  <span className="text-blue-500">~</span>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}># </span>
                   <TypeWriter 
                     text="whoami" 
                     onComplete={() => setShowSecondLine(true)}
                   />
                 </div>
                 {showSecondLine && (
-                  <div className="text-terminal-green">
+                  <div className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>
                     <TypeWriter 
                       text={`${heroData.firstName} ${heroData.lastName} - ${heroData.specialization} Expert`}
                       onComplete={() => setShowThirdLine(true)}
@@ -133,35 +135,35 @@ const HeroSection = () => {
                   </div>
                 )}
                 {showThirdLine && (
-                  <div className="text-terminal-green">
-                    <span className="text-terminal-red">root@cybersec</span>
-                    <span className="text-white">:</span>
-                    <span className="text-blue-400">~</span>
-                    <span className="text-terminal-red"># </span>
+                  <div className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>
+                    <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>root@cybersec</span>
+                    <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>:</span>
+                    <span className="text-blue-500">~</span>
+                    <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}># </span>
                     <TypeWriter text="cat profile.txt" />
                   </div>
                 )}
               </div>
             </TerminalWindow>
 
-            <div className="cyber-card">
-              <h3 className="text-terminal-red text-sm md:text-lg mb-3 glow-text">System Status</h3>
+            <div className={`cyber-card ${theme === 'light' ? 'bg-card border-border' : ''}`}>
+              <h3 className={`text-sm md:text-lg mb-3 ${theme === 'dark' ? 'text-terminal-red glow-text' : 'text-destructive font-semibold'}`}>System Status</h3>
               <div className="space-y-1 md:space-y-2 text-xs md:text-sm">
                 <div className="flex justify-between">
-                  <span>Security Level:</span>
-                  <span className="text-terminal-red">ROOT ACCESS</span>
+                  <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>Security Level:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive font-medium'}>ROOT ACCESS</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Penetration Testing:</span>
-                  <span className="text-terminal-green">ACTIVE</span>
+                  <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>Penetration Testing:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-green' : 'text-primary font-medium'}>ACTIVE</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Vulnerability Scanner:</span>
-                  <span className="text-terminal-green">RUNNING</span>
+                  <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>Vulnerability Scanner:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-green' : 'text-primary font-medium'}>RUNNING</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>LinkedIn Status:</span>
-                  <span className="text-terminal-cyan">CONNECTED</span>
+                  <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>LinkedIn Status:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary font-medium'}>CONNECTED</span>
                 </div>
               </div>
             </div>
@@ -170,46 +172,46 @@ const HeroSection = () => {
           {/* Right Column - Info */}
           <div className="text-center lg:text-left space-y-4 lg:space-y-6 order-1 lg:order-2">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-terminal-green glow-text mb-2">
+              <h1 className={`text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
                 {heroData.firstName}
               </h1>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-terminal-red mb-3 lg:mb-4">
+              <h2 className={`text-xl sm:text-2xl lg:text-3xl font-bold mb-3 lg:mb-4 ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                 {heroData.lastName}
               </h2>
-              <div className="text-sm sm:text-base lg:text-lg text-white mb-4 lg:mb-6">
-                <span className="text-terminal-red">&gt; </span>
-                <span className="text-terminal-green transition-all duration-500">
+              <div className={`text-sm sm:text-base lg:text-lg mb-4 lg:mb-6 ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>
+                <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>&gt; </span>
+                <span className={`transition-all duration-500 ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
                   {heroData.skills[currentSkill]}
                 </span>
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed px-2 lg:px-0">
+            <p className={`text-xs sm:text-sm lg:text-base leading-relaxed px-2 lg:px-0 ${theme === 'dark' ? 'text-gray-300' : 'text-muted-foreground'}`}>
               {heroData.bio}
             </p>
 
             {/* LinkedIn Profile Info */}
-            <div className="cyber-card border-terminal-red">
-              <h3 className="text-terminal-red text-sm lg:text-base mb-3 glow-text">Professional Profile</h3>
+            <div className={`cyber-card ${theme === 'dark' ? 'border-terminal-red' : 'border-destructive/30 bg-card'}`}>
+              <h3 className={`text-sm lg:text-base mb-3 ${theme === 'dark' ? 'text-terminal-red glow-text' : 'text-destructive font-semibold'}`}>Professional Profile</h3>
               <div className="space-y-2 text-xs lg:text-sm">
                 <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-terminal-cyan">LinkedIn:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>LinkedIn:</span>
                   <a 
                     href={heroData.linkedinUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-terminal-green hover:text-terminal-red transition-colors duration-300 break-all"
+                    className={`transition-colors duration-300 break-all ${theme === 'dark' ? 'text-terminal-green hover:text-terminal-red' : 'text-primary hover:text-destructive'}`}
                   >
                     {heroData.linkedinUsername}
                   </a>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-terminal-cyan">Specialization:</span>
-                  <span className="text-terminal-green">{heroData.specialization}</span>
+                  <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>Specialization:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>{heroData.specialization}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-terminal-cyan">Status:</span>
-                  <span className="text-terminal-red">{heroData.status}</span>
+                  <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>Status:</span>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>{heroData.status}</span>
                 </div>
               </div>
             </div>
@@ -217,13 +219,21 @@ const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center lg:justify-start">
               <button 
                 onClick={() => scrollToSection('projects')}
-                className="cyber-card border border-terminal-green hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg glow-border text-xs lg:text-sm"
+                className={`cyber-card border transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm ${
+                  theme === 'dark' 
+                    ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark glow-border' 
+                    : 'border-primary hover:bg-primary hover:text-primary-foreground bg-card'
+                }`}
               >
                 View Projects
               </button>
               <button 
                 onClick={downloadResume}
-                className="cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm"
+                className={`cyber-card border transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm ${
+                  theme === 'dark' 
+                    ? 'border-terminal-red hover:bg-terminal-red hover:text-white' 
+                    : 'border-destructive hover:bg-destructive hover:text-destructive-foreground bg-card'
+                }`}
               >
                 Download Resume
               </button>
@@ -231,7 +241,11 @@ const HeroSection = () => {
                 href={heroData.linkedinUrl}
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="cyber-card border border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm text-center"
+                className={`cyber-card border transition-all duration-300 px-4 lg:px-6 py-2 rounded-lg text-xs lg:text-sm text-center ${
+                  theme === 'dark' 
+                    ? 'border-terminal-cyan hover:bg-terminal-cyan hover:text-terminal-dark' 
+                    : 'border-secondary hover:bg-secondary hover:text-secondary-foreground bg-card'
+                }`}
               >
                 LinkedIn Profile
               </a>

@@ -3,6 +3,7 @@ import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { useTheme } from '@/hooks/useTheme';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name too long'),
@@ -54,6 +55,7 @@ const ContactSection = () => {
   const [submitting, setSubmitting] = useState(false);
   const [contactData, setContactData] = useState<ContactData>(defaultContactData);
   const { toast } = useToast();
+  const { theme } = useTheme();
 
   const fetchContactData = useCallback(async () => {
     try {
@@ -176,10 +178,10 @@ const ContactSection = () => {
     <section id="contact" className="py-12 lg:py-20 relative px-4">
       <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
         <div className="text-center mb-8 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-terminal-green glow-text mb-4">
+          <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
             &lt; Contact /&gt;
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-terminal-red">
+          <p className={`text-base sm:text-lg lg:text-xl ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
             Let's connect and secure the digital world together
           </p>
         </div>
@@ -189,15 +191,15 @@ const ContactSection = () => {
           <div className="order-2 lg:order-1">
             <TerminalWindow title="root@cybersec:~# send_message.sh">
               <form onSubmit={handleSubmit} className="space-y-3 lg:space-y-4">
-                <div className="text-terminal-red mb-2 text-xs lg:text-sm">
+                <div className={`mb-2 text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                   #!/bin/bash
                 </div>
-                <div className="text-terminal-green mb-3 lg:mb-4 text-xs lg:text-sm">
+                <div className={`mb-3 lg:mb-4 text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
                   echo "Initiating secure communication..."
                 </div>
                 
                 <div>
-                  <label className="block text-terminal-red text-xs lg:text-sm mb-1 lg:mb-2">
+                  <label className={`block text-xs lg:text-sm mb-1 lg:mb-2 ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                     Name:
                   </label>
                   <input
@@ -205,14 +207,18 @@ const ContactSection = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
+                    className={`w-full border rounded px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm focus:outline-none transition-colors ${
+                      theme === 'dark' 
+                        ? 'bg-terminal-gray border-terminal-green text-white focus:border-terminal-red glow-border' 
+                        : 'bg-muted border-primary/30 text-foreground focus:border-primary'
+                    }`}
                     required
                     maxLength={100}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-terminal-red text-xs lg:text-sm mb-1 lg:mb-2">
+                  <label className={`block text-xs lg:text-sm mb-1 lg:mb-2 ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                     Email:
                   </label>
                   <input
@@ -220,14 +226,18 @@ const ContactSection = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
+                    className={`w-full border rounded px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm focus:outline-none transition-colors ${
+                      theme === 'dark' 
+                        ? 'bg-terminal-gray border-terminal-green text-white focus:border-terminal-red glow-border' 
+                        : 'bg-muted border-primary/30 text-foreground focus:border-primary'
+                    }`}
                     required
                     maxLength={255}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-terminal-red text-xs lg:text-sm mb-1 lg:mb-2">
+                  <label className={`block text-xs lg:text-sm mb-1 lg:mb-2 ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                     Subject:
                   </label>
                   <input
@@ -235,13 +245,17 @@ const ContactSection = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border"
+                    className={`w-full border rounded px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm focus:outline-none transition-colors ${
+                      theme === 'dark' 
+                        ? 'bg-terminal-gray border-terminal-green text-white focus:border-terminal-red glow-border' 
+                        : 'bg-muted border-primary/30 text-foreground focus:border-primary'
+                    }`}
                     maxLength={200}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-terminal-red text-xs lg:text-sm mb-1 lg:mb-2">
+                  <label className={`block text-xs lg:text-sm mb-1 lg:mb-2 ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>
                     Message:
                   </label>
                   <textarea
@@ -249,7 +263,11 @@ const ContactSection = () => {
                     value={formData.message}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full bg-terminal-gray border border-terminal-green rounded px-2 lg:px-3 py-1 lg:py-2 text-white text-xs lg:text-sm focus:border-terminal-red focus:outline-none glow-border resize-none"
+                    className={`w-full border rounded px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm focus:outline-none resize-none transition-colors ${
+                      theme === 'dark' 
+                        ? 'bg-terminal-gray border-terminal-green text-white focus:border-terminal-red glow-border' 
+                        : 'bg-muted border-primary/30 text-foreground focus:border-primary'
+                    }`}
                     required
                     maxLength={2000}
                   ></textarea>
@@ -258,7 +276,11 @@ const ContactSection = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full cyber-card border border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 px-4 lg:px-6 py-2 lg:py-3 rounded glow-border text-xs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full cyber-card border transition-all duration-300 px-4 lg:px-6 py-2 lg:py-3 rounded text-xs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    theme === 'dark' 
+                      ? 'border-terminal-red hover:bg-terminal-red hover:text-white glow-border' 
+                      : 'border-destructive hover:bg-destructive hover:text-destructive-foreground bg-card'
+                  }`}
                 >
                   {submitting ? 'Sending...' : 'Execute send_message.sh'}
                 </button>
@@ -269,28 +291,28 @@ const ContactSection = () => {
           {/* Contact Info */}
           <div className="space-y-4 lg:space-y-8 order-1 lg:order-2">
             {/* Contact Details */}
-            <div className="cyber-card border-terminal-red">
-              <h3 className="text-terminal-red text-base lg:text-xl mb-4 lg:mb-6 glow-text">Contact Information</h3>
+            <div className={`cyber-card ${theme === 'dark' ? 'border-terminal-red' : 'border-destructive/30 bg-card'}`}>
+              <h3 className={`text-base lg:text-xl mb-4 lg:mb-6 ${theme === 'dark' ? 'text-terminal-red glow-text' : 'text-destructive font-semibold'}`}>Contact Information</h3>
               <div className="space-y-2 lg:space-y-4">
                 <div className="flex items-center">
-                  <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📧</span>
-                  <span className="text-white text-xs lg:text-sm">{contactData.email}</span>
+                  <span className={`mr-2 lg:mr-3 text-sm lg:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>📧</span>
+                  <span className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>{contactData.email}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📱</span>
-                  <span className="text-white text-xs lg:text-sm">{contactData.phone}</span>
+                  <span className={`mr-2 lg:mr-3 text-sm lg:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>📱</span>
+                  <span className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>{contactData.phone}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-terminal-green mr-2 lg:mr-3 text-sm lg:text-base">📍</span>
-                  <span className="text-white text-xs lg:text-sm">{contactData.location}</span>
+                  <span className={`mr-2 lg:mr-3 text-sm lg:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>📍</span>
+                  <span className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>{contactData.location}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-terminal-red mr-2 lg:mr-3 text-sm lg:text-base">💼</span>
+                  <span className={`mr-2 lg:mr-3 text-sm lg:text-base ${theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}`}>💼</span>
                   <a 
                     href={contactData.linkedinUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-terminal-cyan hover:text-terminal-red transition-colors duration-300 text-xs lg:text-sm"
+                    className={`transition-colors duration-300 text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-cyan hover:text-terminal-red' : 'text-secondary hover:text-destructive'}`}
                   >
                     LinkedIn: {contactData.linkedinUsername}
                   </a>
@@ -299,8 +321,8 @@ const ContactSection = () => {
             </div>
 
             {/* Social Links */}
-            <div className="cyber-card">
-              <h3 className="text-terminal-cyan text-base lg:text-xl mb-4 lg:mb-6 glow-text">Connect With Me</h3>
+            <div className={`cyber-card ${theme === 'light' ? 'bg-card border-border' : ''}`}>
+              <h3 className={`text-base lg:text-xl mb-4 lg:mb-6 ${theme === 'dark' ? 'text-terminal-cyan glow-text' : 'text-secondary font-semibold'}`}>Connect With Me</h3>
               <div className="grid grid-cols-2 gap-2 lg:gap-4">
                 {contactData.socialLinks.map((link, index) => (
                   <a
@@ -309,7 +331,11 @@ const ContactSection = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackLinkClick(link.name, link.url)}
-                    className="cyber-card border border-terminal-gray hover:border-terminal-red hover:bg-terminal-red hover:text-white transition-all duration-300 p-2 lg:p-4 text-center rounded"
+                    className={`cyber-card border transition-all duration-300 p-2 lg:p-4 text-center rounded ${
+                      theme === 'dark' 
+                        ? 'border-terminal-gray hover:border-terminal-red hover:bg-terminal-red hover:text-white' 
+                        : 'border-border hover:border-destructive hover:bg-destructive hover:text-destructive-foreground bg-card'
+                    }`}
                   >
                     <div className="text-lg lg:text-2xl mb-1 lg:mb-2">{link.icon}</div>
                     <div className="text-xs lg:text-sm">{link.name}</div>
@@ -321,17 +347,17 @@ const ContactSection = () => {
             {/* Status */}
             <TerminalWindow title="root@cybersec:~# status.log">
               <div className="space-y-1 lg:space-y-2">
-                <div className="text-terminal-green text-xs lg:text-sm">
-                  <span className="text-terminal-red">Status:</span> Available for opportunities
+                <div className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>Status:</span> Available for opportunities
                 </div>
-                <div className="text-terminal-green text-xs lg:text-sm">
-                  <span className="text-terminal-red">Response Time:</span> {contactData.responseTime}
+                <div className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>Response Time:</span> {contactData.responseTime}
                 </div>
-                <div className="text-terminal-green text-xs lg:text-sm">
-                  <span className="text-terminal-red">Preferred Contact:</span> {contactData.preferredContact}
+                <div className={`text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>Preferred Contact:</span> {contactData.preferredContact}
                 </div>
-                <div className="text-terminal-green animate-pulse text-xs lg:text-sm">
-                  <span className="text-terminal-red">&gt;</span> Ready to collaborate_
+                <div className={`animate-pulse text-xs lg:text-sm ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
+                  <span className={theme === 'dark' ? 'text-terminal-red' : 'text-destructive'}>&gt;</span> Ready to collaborate_
                 </div>
               </div>
             </TerminalWindow>
