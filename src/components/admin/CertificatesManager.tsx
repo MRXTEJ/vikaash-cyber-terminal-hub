@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, X, Save, Upload } from 'lucide-react';
+import { generatePdfThumbnail } from '@/utils/pdfThumbnail';
 
 interface Certificate {
   id: string;
@@ -15,6 +16,7 @@ interface Certificate {
   date: string;
   description: string | null;
   credential_url: string | null;
+  thumbnail_url: string | null;
   display_order: number;
 }
 
@@ -47,6 +49,7 @@ const CertificatesManager = () => {
     date: '',
     description: '',
     credential_url: '',
+    thumbnail_url: '',
     display_order: 0,
   });
 
@@ -82,6 +85,7 @@ const CertificatesManager = () => {
       date: '',
       description: '',
       credential_url: '',
+      thumbnail_url: '',
       display_order: 0,
     });
     setEditingCertificate(null);
@@ -96,6 +100,7 @@ const CertificatesManager = () => {
       date: certificate.date,
       description: certificate.description || '',
       credential_url: certificate.credential_url || '',
+      thumbnail_url: certificate.thumbnail_url || '',
       display_order: certificate.display_order || 0,
     });
     setIsCreating(false);
@@ -125,7 +130,7 @@ const CertificatesManager = () => {
     setUploading(true);
     try {
       const fileName = `certificates/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('files')
         .upload(fileName, file);
 
@@ -135,7 +140,33 @@ const CertificatesManager = () => {
         .from('files')
         .getPublicUrl(fileName);
 
-      setFormData({ ...formData, credential_url: publicUrl });
+      let thumbnailUrl = '';
+
+      // If it's a PDF, generate thumbnail
+      if (file.type === 'application/pdf') {
+        toast({ title: 'Generating thumbnail...', description: 'Please wait' });
+        
+        const thumbnailBlob = await generatePdfThumbnail(publicUrl);
+        
+        if (thumbnailBlob) {
+          const thumbFileName = `certificates/thumbs/${Date.now()}_thumb.jpg`;
+          const { error: thumbError } = await supabase.storage
+            .from('files')
+            .upload(thumbFileName, thumbnailBlob, { contentType: 'image/jpeg' });
+
+          if (!thumbError) {
+            const { data: { publicUrl: thumbUrl } } = supabase.storage
+              .from('files')
+              .getPublicUrl(thumbFileName);
+            thumbnailUrl = thumbUrl;
+          }
+        }
+      } else {
+        // For images, use the image itself as thumbnail
+        thumbnailUrl = publicUrl;
+      }
+
+      setFormData({ ...formData, credential_url: publicUrl, thumbnail_url: thumbnailUrl });
       toast({ title: 'Success', description: 'File uploaded successfully' });
     } catch (error: any) {
       console.error('Error uploading file:', error);
@@ -168,6 +199,7 @@ const CertificatesManager = () => {
         date: formData.date,
         description: formData.description || null,
         credential_url: formData.credential_url || null,
+        thumbnail_url: formData.thumbnail_url || null,
         display_order: formData.display_order,
       };
 

@@ -53,6 +53,7 @@ export type Database = {
           display_order: number | null
           id: string
           issuer: string
+          thumbnail_url: string | null
           title: string
           updated_at: string
         }
@@ -64,6 +65,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           issuer: string
+          thumbnail_url?: string | null
           title: string
           updated_at?: string
         }
@@ -75,6 +77,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           issuer?: string
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string
         }
