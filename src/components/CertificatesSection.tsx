@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
+import CertificateViewer from './CertificateViewer';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Certificate {
@@ -17,6 +18,7 @@ const CertificatesSection = () => {
   const [selectedCert, setSelectedCert] = useState(0);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfPreviewLoading, setPdfPreviewLoading] = useState(false);
@@ -109,10 +111,12 @@ const CertificatesSection = () => {
     };
   }, [fetchCertificates]);
 
-  const handleViewCertificate = (link: string | null) => {
-    if (link) {
-      window.open(link, '_blank', 'noopener,noreferrer');
-    }
+  const handleOpenViewer = () => {
+    setViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setViewerOpen(false);
   };
 
   if (loading) {
@@ -219,13 +223,13 @@ const CertificatesSection = () => {
 
                 <div className="pt-2 sm:pt-4">
                   <button 
-                    onClick={() => handleViewCertificate(currentCert.credential_url)}
+                    onClick={handleOpenViewer}
                     className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded w-full text-sm sm:text-base ${
-                      currentCert.credential_url 
+                      currentCert.credential_url || currentCert.thumbnail_url
                         ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
                         : 'border-gray-500 text-gray-500 cursor-not-allowed'
                     }`}
-                    disabled={!currentCert.credential_url}
+                    disabled={!currentCert.credential_url && !currentCert.thumbnail_url}
                   >
                     View Certificate
                   </button>
@@ -242,7 +246,7 @@ const CertificatesSection = () => {
                         alt={currentCert.title}
                         loading="lazy"
                         className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
-                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                        onClick={handleOpenViewer}
                       />
                     ) : /\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url || '') ? (
                       <img
@@ -250,12 +254,12 @@ const CertificatesSection = () => {
                         alt={currentCert.title}
                         loading="lazy"
                         className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
-                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                        onClick={handleOpenViewer}
                       />
                     ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url || '') ? (
                       <div
                         className="w-32 sm:w-40 h-44 sm:h-52 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
-                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                        onClick={handleOpenViewer}
                       >
                         {pdfPreviewUrl ? (
                           <div className="w-full h-full overflow-hidden">
@@ -287,7 +291,7 @@ const CertificatesSection = () => {
                     ) : (
                       <div
                         className="w-32 sm:w-40 h-32 sm:h-40 bg-terminal-dark rounded flex flex-col items-center justify-center cursor-pointer"
-                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                        onClick={handleOpenViewer}
                       >
                         <div className="text-terminal-cyan text-2xl">🔗</div>
                         <span className="text-terminal-green text-xs mt-1">Open link</span>
@@ -300,6 +304,16 @@ const CertificatesSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Certificate Viewer */}
+      <CertificateViewer
+        isOpen={viewerOpen}
+        onClose={handleCloseViewer}
+        title={currentCert.title}
+        imageUrl={currentCert.thumbnail_url || (/\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url || '') ? currentCert.credential_url : null)}
+        pdfUrl={/\.pdf(\?|#|$)/i.test(currentCert.credential_url || '') ? currentCert.credential_url : null}
+        credentialUrl={currentCert.credential_url}
+      />
     </section>
   );
 };
