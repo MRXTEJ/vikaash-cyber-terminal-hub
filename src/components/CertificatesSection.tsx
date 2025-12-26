@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import CertificateViewer from './CertificateViewer';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Certificate {
   id: string;
@@ -19,6 +20,7 @@ const CertificatesSection = () => {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const { theme } = useTheme();
 
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfPreviewLoading, setPdfPreviewLoading] = useState(false);
@@ -124,7 +126,7 @@ const CertificatesSection = () => {
       <section id="certificates" className="py-12 sm:py-16 lg:py-20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <p className="text-terminal-green animate-pulse text-sm sm:text-base">Loading certificates...</p>
+            <p className={`animate-pulse text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Loading certificates...</p>
           </div>
         </div>
       </section>
@@ -136,10 +138,10 @@ const CertificatesSection = () => {
       <section id="certificates" className="py-12 sm:py-16 lg:py-20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-terminal-green glow-text mb-4">
+            <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
               &lt; Certificates /&gt;
             </h2>
-            <p className="text-terminal-cyan text-sm sm:text-base">No certificates available yet.</p>
+            <p className={`text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>No certificates available yet.</p>
           </div>
         </div>
       </section>
@@ -152,10 +154,10 @@ const CertificatesSection = () => {
     <section id="certificates" className="py-12 sm:py-16 lg:py-20 relative">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-terminal-green glow-text mb-2 sm:mb-4">
+          <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
             &lt; Certificates /&gt;
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-terminal-cyan">
+          <p className={`text-base sm:text-lg lg:text-xl ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>
             Professional certifications and achievements
           </p>
         </div>
@@ -164,18 +166,18 @@ const CertificatesSection = () => {
           {/* Certificate Terminal */}
           <TerminalWindow title="certificates.db">
             <div className="space-y-3">
-              <div className="text-terminal-cyan text-xs sm:text-sm">
+              <div className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>
                 SELECT * FROM certifications ORDER BY display_order;
               </div>
-              <div className="border-t border-terminal-gray pt-3">
+              <div className={`border-t pt-3 ${theme === 'dark' ? 'border-terminal-gray' : 'border-border'}`}>
                 {certificates.map((cert, index) => (
                   <div
                     key={cert.id}
                     onClick={() => setSelectedCert(index)}
                     className={`cursor-pointer p-2 sm:p-3 rounded mb-2 transition-all duration-300 ${
                       selectedCert === index 
-                        ? 'bg-terminal-green text-terminal-dark' 
-                        : 'hover:bg-terminal-gray border border-terminal-gray'
+                        ? theme === 'dark' ? 'bg-terminal-green text-terminal-dark' : 'bg-primary text-primary-foreground'
+                        : theme === 'dark' ? 'hover:bg-terminal-gray border border-terminal-gray' : 'hover:bg-muted border border-border'
                     }`}
                   >
                     <div className="flex justify-between items-start gap-2">
@@ -194,9 +196,9 @@ const CertificatesSection = () => {
           </TerminalWindow>
 
           {/* Certificate Details */}
-          <div className="cyber-card">
+          <div className={`cyber-card ${theme === 'light' ? 'bg-card border-border' : ''}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-              <h3 className="text-lg sm:text-xl lg:text-2xl text-terminal-cyan glow-text">
+              <h3 className={`text-lg sm:text-xl lg:text-2xl ${theme === 'dark' ? 'text-terminal-cyan glow-text' : 'text-secondary font-semibold'}`}>
                 {currentCert.title}
               </h3>
             </div>
@@ -205,19 +207,19 @@ const CertificatesSection = () => {
               {/* Text Content */}
               <div className="flex-1 space-y-3 sm:space-y-4">
                 <div>
-                  <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Issuing Authority:</h4>
-                  <p className="text-white text-sm sm:text-base">{currentCert.issuer}</p>
+                  <h4 className={`mb-1 sm:mb-2 text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Issuing Authority:</h4>
+                  <p className={`text-sm sm:text-base ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>{currentCert.issuer}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Date:</h4>
-                  <p className="text-white text-sm sm:text-base">{currentCert.date}</p>
+                  <h4 className={`mb-1 sm:mb-2 text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Date:</h4>
+                  <p className={`text-sm sm:text-base ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>{currentCert.date}</p>
                 </div>
 
                 {currentCert.description && (
                   <div>
-                    <h4 className="text-terminal-green mb-1 sm:mb-2 text-sm sm:text-base">Description:</h4>
-                    <p className="text-gray-300 text-sm sm:text-base">{currentCert.description}</p>
+                    <h4 className={`mb-1 sm:mb-2 text-sm sm:text-base ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Description:</h4>
+                    <p className={`text-sm sm:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-muted-foreground'}`}>{currentCert.description}</p>
                   </div>
                 )}
 
@@ -226,8 +228,10 @@ const CertificatesSection = () => {
                     onClick={handleOpenViewer}
                     className={`cyber-card border transition-all duration-300 px-4 sm:px-6 py-2 rounded w-full text-sm sm:text-base ${
                       currentCert.credential_url || currentCert.thumbnail_url
-                        ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
-                        : 'border-gray-500 text-gray-500 cursor-not-allowed'
+                        ? theme === 'dark' 
+                          ? 'border-terminal-green hover:bg-terminal-green hover:text-terminal-dark'
+                          : 'border-primary hover:bg-primary hover:text-primary-foreground bg-card'
+                        : 'border-muted-foreground/30 text-muted-foreground cursor-not-allowed'
                     }`}
                     disabled={!currentCert.credential_url && !currentCert.thumbnail_url}
                   >
@@ -239,13 +243,13 @@ const CertificatesSection = () => {
               {/* Certificate Preview with glowing border */}
               {(currentCert.thumbnail_url || currentCert.credential_url) && (
                 <div className="flex-shrink-0">
-                  <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]">
+                  <div className={`p-[2px] rounded-lg ${theme === 'dark' ? 'bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]' : 'bg-gradient-to-br from-primary via-secondary to-primary shadow-lg'}`}>
                     {currentCert.thumbnail_url ? (
                       <img
                         src={currentCert.thumbnail_url}
                         alt={currentCert.title}
                         loading="lazy"
-                        className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
+                        className={`max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain rounded cursor-pointer ${theme === 'dark' ? 'bg-terminal-dark' : 'bg-card'}`}
                         onClick={handleOpenViewer}
                       />
                     ) : /\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url || '') ? (
@@ -253,12 +257,12 @@ const CertificatesSection = () => {
                         src={currentCert.credential_url!}
                         alt={currentCert.title}
                         loading="lazy"
-                        className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
+                        className={`max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain rounded cursor-pointer ${theme === 'dark' ? 'bg-terminal-dark' : 'bg-card'}`}
                         onClick={handleOpenViewer}
                       />
                     ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url || '') ? (
                       <div
-                        className="w-32 sm:w-40 h-44 sm:h-52 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
+                        className={`w-32 sm:w-40 h-44 sm:h-52 rounded overflow-hidden cursor-pointer relative group ${theme === 'dark' ? 'bg-terminal-dark' : 'bg-card'}`}
                         onClick={handleOpenViewer}
                       >
                         {pdfPreviewUrl ? (
@@ -272,29 +276,29 @@ const CertificatesSection = () => {
                           </div>
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                            <div className="text-terminal-cyan text-2xl">📄</div>
+                            <div className={`text-2xl ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>📄</div>
                             {pdfPreviewLoading ? (
-                              <span className="text-terminal-green text-xs">Loading...</span>
+                              <span className={`text-xs ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Loading...</span>
                             ) : pdfPreviewError ? (
-                              <span className="text-terminal-green text-xs">Click to view</span>
+                              <span className={`text-xs ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Click to view</span>
                             ) : (
-                              <span className="text-terminal-green text-xs">PDF</span>
+                              <span className={`text-xs ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>PDF</span>
                             )}
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-end justify-center pb-2">
-                          <span className="opacity-0 group-hover:opacity-100 text-terminal-green text-xs font-bold transition-opacity bg-terminal-dark/80 px-2 py-1 rounded">
+                        <div className={`absolute inset-0 bg-transparent transition-colors flex items-end justify-center pb-2 ${theme === 'dark' ? 'group-hover:bg-terminal-green/10' : 'group-hover:bg-primary/10'}`}>
+                          <span className={`opacity-0 group-hover:opacity-100 text-xs font-bold transition-opacity px-2 py-1 rounded ${theme === 'dark' ? 'text-terminal-green bg-terminal-dark/80' : 'text-primary bg-card/80'}`}>
                             Click to view
                           </span>
                         </div>
                       </div>
                     ) : (
                       <div
-                        className="w-32 sm:w-40 h-32 sm:h-40 bg-terminal-dark rounded flex flex-col items-center justify-center cursor-pointer"
+                        className={`w-32 sm:w-40 h-32 sm:h-40 rounded flex flex-col items-center justify-center cursor-pointer ${theme === 'dark' ? 'bg-terminal-dark' : 'bg-card'}`}
                         onClick={handleOpenViewer}
                       >
-                        <div className="text-terminal-cyan text-2xl">🔗</div>
-                        <span className="text-terminal-green text-xs mt-1">Open link</span>
+                        <div className={`text-2xl ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>🔗</div>
+                        <span className={`text-xs mt-1 ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>Open link</span>
                       </div>
                     )}
                   </div>

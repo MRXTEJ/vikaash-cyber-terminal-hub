@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Skill {
   name: string;
@@ -30,6 +31,7 @@ const defaultAboutData: AboutData = {
 
 const AboutSection = () => {
   const [aboutData, setAboutData] = useState<AboutData>(defaultAboutData);
+  const { theme } = useTheme();
 
   const fetchAboutData = useCallback(async () => {
     try {
@@ -107,10 +109,10 @@ const AboutSection = () => {
     <section id="about" className="py-20 relative">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-terminal-green glow-text mb-4">
+          <h2 className={`text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-terminal-green glow-text' : 'text-primary'}`}>
             &lt; About Me /&gt;
           </h2>
-          <p className="text-xl text-terminal-cyan">
+          <p className={`text-xl ${theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}`}>
             Exploring the depths of cybersecurity
           </p>
         </div>
@@ -119,20 +121,20 @@ const AboutSection = () => {
           {/* Terminal About */}
           <TerminalWindow title="about.sh">
             <div className="space-y-4">
-              <div className="text-terminal-green">
-                <span className="text-terminal-cyan">#!/bin/bash</span>
+              <div className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>
+                <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>#!/bin/bash</span>
               </div>
-              <div className="text-terminal-green">
-                <span className="text-terminal-cyan">echo</span> "Cybersecurity Professional"
+              <div className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>
+                <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>echo</span> "Cybersecurity Professional"
               </div>
-              <div className="text-white mt-4">
+              <div className={`mt-4 ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>
                 {aboutData.bio1}
               </div>
-              <div className="text-white mt-4">
+              <div className={`mt-4 ${theme === 'dark' ? 'text-white' : 'text-foreground'}`}>
                 {aboutData.bio2}
               </div>
-              <div className="text-terminal-green mt-4">
-                <span className="text-terminal-cyan">chmod</span> +x secure_future.sh
+              <div className={`mt-4 ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
+                <span className={theme === 'dark' ? 'text-terminal-cyan' : 'text-secondary'}>chmod</span> +x secure_future.sh
               </div>
             </div>
           </TerminalWindow>
@@ -140,18 +142,18 @@ const AboutSection = () => {
           {/* Skills and Tools */}
           <div className="space-y-8">
             {/* Skills Progress */}
-            <div className="cyber-card">
-              <h3 className="text-terminal-cyan text-xl mb-6 glow-text">Technical Skills</h3>
+            <div className={`cyber-card ${theme === 'light' ? 'bg-card border-border' : ''}`}>
+              <h3 className={`text-xl mb-6 ${theme === 'dark' ? 'text-terminal-cyan glow-text' : 'text-secondary font-semibold'}`}>Technical Skills</h3>
               <div className="space-y-4">
                 {aboutData.skills.map((skill, index) => (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-white">{skill.name}</span>
-                      <span className="text-terminal-green">{skill.level}%</span>
+                      <span className={theme === 'dark' ? 'text-white' : 'text-foreground'}>{skill.name}</span>
+                      <span className={theme === 'dark' ? 'text-terminal-green' : 'text-primary'}>{skill.level}%</span>
                     </div>
-                    <div className="w-full bg-terminal-gray rounded-full h-2">
+                    <div className={`w-full rounded-full h-2 ${theme === 'dark' ? 'bg-terminal-gray' : 'bg-muted'}`}>
                       <div 
-                        className="bg-gradient-to-r from-terminal-green to-terminal-cyan h-2 rounded-full transition-all duration-1000 glow-border"
+                        className={`h-2 rounded-full transition-all duration-1000 ${theme === 'dark' ? 'bg-gradient-to-r from-terminal-green to-terminal-cyan glow-border' : 'bg-gradient-to-r from-primary to-secondary'}`}
                         style={{ width: `${skill.level}%` }}
                       ></div>
                     </div>
@@ -161,13 +163,17 @@ const AboutSection = () => {
             </div>
 
             {/* Tools */}
-            <div className="cyber-card">
-              <h3 className="text-terminal-cyan text-xl mb-6 glow-text">Security Tools</h3>
+            <div className={`cyber-card ${theme === 'light' ? 'bg-card border-border' : ''}`}>
+              <h3 className={`text-xl mb-6 ${theme === 'dark' ? 'text-terminal-cyan glow-text' : 'text-secondary font-semibold'}`}>Security Tools</h3>
               <div className="grid grid-cols-2 gap-3">
                 {aboutData.tools.map((tool, index) => (
                   <div 
                     key={index}
-                    className="bg-terminal-gray border border-terminal-green rounded px-3 py-2 text-center text-sm hover:bg-terminal-green hover:text-terminal-dark transition-all duration-300"
+                    className={`border rounded px-3 py-2 text-center text-sm transition-all duration-300 ${
+                      theme === 'dark' 
+                        ? 'bg-terminal-gray border-terminal-green hover:bg-terminal-green hover:text-terminal-dark' 
+                        : 'bg-muted border-primary/30 hover:bg-primary hover:text-primary-foreground text-foreground'
+                    }`}
                   >
                     {tool}
                   </div>
