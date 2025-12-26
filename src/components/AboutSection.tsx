@@ -55,17 +55,45 @@ const AboutSection = () => {
   // Realtime subscription for instant updates
   useEffect(() => {
     const channel = supabase
-      .channel('about-realtime')
+      .channel('about-realtime-updates')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'site_settings',
-          filter: 'key=eq.about_data',
         },
-        () => {
-          fetchAboutData();
+        (payload) => {
+          if (payload.new && (payload.new as { key: string }).key === 'about_data') {
+            const newValue = (payload.new as { value: string }).value;
+            if (newValue) {
+              try {
+                setAboutData(JSON.parse(newValue));
+              } catch (e) {
+                console.error('Error parsing about data:', e);
+              }
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'site_settings',
+        },
+        (payload) => {
+          if (payload.new && (payload.new as { key: string }).key === 'about_data') {
+            const newValue = (payload.new as { value: string }).value;
+            if (newValue) {
+              try {
+                setAboutData(JSON.parse(newValue));
+              } catch (e) {
+                console.error('Error parsing about data:', e);
+              }
+            }
+          }
         }
       )
       .subscribe();
@@ -73,7 +101,7 @@ const AboutSection = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchAboutData]);
+  }, []);
 
   return (
     <section id="about" className="py-20 relative">
