@@ -50,17 +50,22 @@ const AboutManager = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('*')
+        .select('value')
         .eq('key', 'about_data')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
 
       if (data?.value) {
         setFormData(JSON.parse(data.value));
       }
     } catch (error) {
       console.error('Error fetching about data:', error);
+      toast({
+        title: 'Error',
+        description: 'About data load nahi ho pa raha. Please refresh karke try karein.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -69,23 +74,24 @@ const AboutManager = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data: existing } = await supabase
+      // First try update (no duplicates, works even if row doesn't exist)
+      const { data: updatedRows, error: updateError } = await supabase
         .from('site_settings')
-        .select('id')
+        .update({ value: JSON.stringify(formData), updated_at: new Date().toISOString() })
         .eq('key', 'about_data')
-        .single();
+        .select('id');
 
-      if (existing) {
-        const { error } = await supabase
+      if (updateError) throw updateError;
+
+      if (!updatedRows || updatedRows.length === 0) {
+        const { error: insertError } = await supabase
           .from('site_settings')
-          .update({ value: JSON.stringify(formData), updated_at: new Date().toISOString() })
-          .eq('key', 'about_data');
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('site_settings')
-          .insert({ key: 'about_data', value: JSON.stringify(formData) });
-        if (error) throw error;
+          .insert({
+            key: 'about_data',
+            value: JSON.stringify(formData),
+            updated_at: new Date().toISOString(),
+          });
+        if (insertError) throw insertError;
       }
 
       toast({ title: 'Success', description: 'About section updated successfully' });
