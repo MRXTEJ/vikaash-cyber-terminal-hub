@@ -16,7 +16,10 @@ const CertificatesSection = () => {
   const [selectedCert, setSelectedCert] = useState(0);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfPreviewLoading, setPdfPreviewLoading] = useState(false);
+  const [pdfPreviewError, setPdfPreviewError] = useState(false);
 
   const selectedCredentialUrl = certificates[selectedCert]?.credential_url ?? null;
 
@@ -45,8 +48,11 @@ const CertificatesSection = () => {
 
     const isPdf = !!selectedCredentialUrl && /\.pdf(\?|#|$)/i.test(selectedCredentialUrl);
 
+    setPdfPreviewUrl(null);
+    setPdfPreviewError(false);
+    setPdfPreviewLoading(isPdf);
+
     if (!isPdf) {
-      setPdfPreviewUrl(null);
       return () => {
         controller.abort();
         if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -61,7 +67,10 @@ const CertificatesSection = () => {
         objectUrl = URL.createObjectURL(blob);
         setPdfPreviewUrl(objectUrl);
       } catch (e) {
+        setPdfPreviewError(true);
         setPdfPreviewUrl(null);
+      } finally {
+        setPdfPreviewLoading(false);
       }
     })();
 
@@ -241,14 +250,21 @@ const CertificatesSection = () => {
                       >
                         {pdfPreviewUrl ? (
                           <iframe
-                            src={`${pdfPreviewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                            key={pdfPreviewUrl}
+                            src={pdfPreviewUrl}
                             className="w-full h-full pointer-events-none"
                             title={currentCert.title}
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                             <div className="text-terminal-cyan text-2xl">📄</div>
-                            <span className="text-terminal-green text-xs">PDF preview unavailable</span>
+                            {pdfPreviewLoading ? (
+                              <span className="text-terminal-green text-xs">Loading PDF...</span>
+                            ) : pdfPreviewError ? (
+                              <span className="text-terminal-green text-xs">PDF preview not supported</span>
+                            ) : (
+                              <span className="text-terminal-green text-xs">Select to preview</span>
+                            )}
                           </div>
                         )}
                         <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-center justify-center">
