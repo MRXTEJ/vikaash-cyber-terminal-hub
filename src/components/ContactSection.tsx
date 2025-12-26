@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -55,26 +55,49 @@ const ContactSection = () => {
   const [contactData, setContactData] = useState<ContactData>(defaultContactData);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchContactData();
-  }, []);
-
-  const fetchContactData = async () => {
+  const fetchContactData = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
         .select('value')
         .eq('key', 'contact_data')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       if (data?.value) {
         setContactData(JSON.parse(data.value));
       }
     } catch (error) {
       console.error('Error fetching contact data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchContactData();
+  }, [fetchContactData]);
+
+  // Realtime subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('contact-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'key=eq.contact_data',
+        },
+        () => {
+          fetchContactData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchContactData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,11 +7,7 @@ const ResumeSection = () => {
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchResumeUrl();
-  }, []);
-
-  const fetchResumeUrl = async () => {
+  const fetchResumeUrl = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
@@ -27,7 +23,34 @@ const ResumeSection = () => {
     } catch (error) {
       console.error('Error fetching resume:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchResumeUrl();
+  }, [fetchResumeUrl]);
+
+  // Realtime subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('resume-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'key=eq.resume_pdf',
+        },
+        () => {
+          fetchResumeUrl();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchResumeUrl]);
 
   const experience = [
     {
