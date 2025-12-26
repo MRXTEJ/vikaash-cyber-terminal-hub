@@ -136,13 +136,6 @@ const ContactSection = () => {
 
       if (messageError) throw messageError;
 
-      // Log activity
-      await supabase.from('activity_log').insert({
-        activity_type: 'message',
-        title: 'New Contact Message',
-        description: `Message from ${result.data.name} (${result.data.email})`,
-        metadata: { subject: result.data.subject || 'No subject' },
-      });
 
       toast({
         title: 'Message Sent!',
@@ -161,18 +154,6 @@ const ContactSection = () => {
     }
   };
 
-  const trackLinkClick = async (linkName: string, linkUrl: string) => {
-    try {
-      await supabase.from('activity_log').insert({
-        activity_type: 'link_click',
-        title: `${linkName} Link Clicked`,
-        description: `Someone visited your ${linkName} profile`,
-        metadata: { url: linkUrl, platform: linkName },
-      });
-    } catch (error) {
-      console.error('Error tracking link click:', error);
-    }
-  };
 
   return (
     <section id="contact" className="py-12 lg:py-20 relative px-4">
@@ -330,7 +311,7 @@ const ContactSection = () => {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => trackLinkClick(link.name, link.url)}
+                    
                     className={`cyber-card border transition-all duration-300 p-2 lg:p-4 text-center rounded ${
                       theme === 'dark' 
                         ? 'border-terminal-gray hover:border-terminal-red hover:bg-terminal-red hover:text-white' 
