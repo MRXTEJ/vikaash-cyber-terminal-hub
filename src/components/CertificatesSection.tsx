@@ -8,6 +8,7 @@ interface Certificate {
   issuer: string;
   date: string;
   credential_url: string | null;
+  thumbnail_url: string | null;
   description: string | null;
   display_order: number;
 }
@@ -232,18 +233,26 @@ const CertificatesSection = () => {
               </div>
 
               {/* Certificate Preview with glowing border */}
-              {currentCert.credential_url && (
+              {(currentCert.thumbnail_url || currentCert.credential_url) && (
                 <div className="flex-shrink-0 w-32 sm:w-40">
                   <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]">
-                    {/\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url) ? (
+                    {currentCert.thumbnail_url ? (
                       <img
-                        src={currentCert.credential_url}
+                        src={currentCert.thumbnail_url}
                         alt={currentCert.title}
                         loading="lazy"
                         className="w-full h-32 sm:h-40 object-cover rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
-                    ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url) ? (
+                    ) : /\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url || '') ? (
+                      <img
+                        src={currentCert.credential_url!}
+                        alt={currentCert.title}
+                        loading="lazy"
+                        className="w-full h-32 sm:h-40 object-cover rounded cursor-pointer"
+                        onClick={() => handleViewCertificate(currentCert.credential_url)}
+                      />
+                    ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url || '') ? (
                       <div
                         className="w-full h-32 sm:h-40 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
@@ -259,11 +268,11 @@ const CertificatesSection = () => {
                           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                             <div className="text-terminal-cyan text-2xl">📄</div>
                             {pdfPreviewLoading ? (
-                              <span className="text-terminal-green text-xs">Loading PDF...</span>
+                              <span className="text-terminal-green text-xs">Loading...</span>
                             ) : pdfPreviewError ? (
-                              <span className="text-terminal-green text-xs">PDF preview not supported</span>
+                              <span className="text-terminal-green text-xs">Click to view</span>
                             ) : (
-                              <span className="text-terminal-green text-xs">Select to preview</span>
+                              <span className="text-terminal-green text-xs">PDF</span>
                             )}
                           </div>
                         )}
