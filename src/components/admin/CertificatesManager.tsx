@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,21 @@ const CertificatesManager = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: 'Session Expired',
+        description: 'Please login again to make changes',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+      return false;
+    }
+    return true;
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -94,6 +110,8 @@ const CertificatesManager = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!(await checkSession())) return;
+
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       toast({
@@ -119,19 +137,30 @@ const CertificatesManager = () => {
 
       setFormData({ ...formData, credential_url: publicUrl });
       toast({ title: 'Success', description: 'File uploaded successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
+      if (error?.message?.includes('session') || error?.message?.includes('auth')) {
+        toast({
+          title: 'Session Expired',
+          description: 'Please login again',
+          variant: 'destructive',
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to upload file',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setUploading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!(await checkSession())) return;
+
     try {
       const certificateData = {
         title: formData.title,
@@ -161,18 +190,29 @@ const CertificatesManager = () => {
 
       resetForm();
       fetchCertificates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving certificate:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save certificate',
-        variant: 'destructive',
-      });
+      if (error?.code === '42501' || error?.message?.includes('policy')) {
+        toast({
+          title: 'Permission Denied',
+          description: 'Your session may have expired. Please login again.',
+          variant: 'destructive',
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to save certificate',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
+
+    if (!(await checkSession())) return;
 
     try {
       const { error } = await supabase
@@ -183,13 +223,22 @@ const CertificatesManager = () => {
       if (error) throw error;
       toast({ title: 'Success', description: 'Certificate deleted successfully' });
       fetchCertificates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting certificate:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete certificate',
-        variant: 'destructive',
-      });
+      if (error?.code === '42501' || error?.message?.includes('policy')) {
+        toast({
+          title: 'Permission Denied',
+          description: 'Your session may have expired. Please login again.',
+          variant: 'destructive',
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete certificate',
+          variant: 'destructive',
+        });
+      }
     }
   };
 

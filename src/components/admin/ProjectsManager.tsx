@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,21 @@ const ProjectsManager = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: 'Session Expired',
+        description: 'Please login again to make changes',
+        variant: 'destructive',
+      });
+      navigate('/auth');
+      return false;
+    }
+    return true;
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -99,6 +115,8 @@ const ProjectsManager = () => {
   };
 
   const handleSave = async () => {
+    if (!(await checkSession())) return;
+
     try {
       const projectData = {
         title: formData.title,
@@ -130,18 +148,29 @@ const ProjectsManager = () => {
 
       resetForm();
       fetchProjects();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving project:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save project',
-        variant: 'destructive',
-      });
+      if (error?.code === '42501' || error?.message?.includes('policy')) {
+        toast({
+          title: 'Permission Denied',
+          description: 'Your session may have expired. Please login again.',
+          variant: 'destructive',
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to save project',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
+
+    if (!(await checkSession())) return;
 
     try {
       const { error } = await supabase
@@ -152,13 +181,22 @@ const ProjectsManager = () => {
       if (error) throw error;
       toast({ title: 'Success', description: 'Project deleted successfully' });
       fetchProjects();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting project:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete project',
-        variant: 'destructive',
-      });
+      if (error?.code === '42501' || error?.message?.includes('policy')) {
+        toast({
+          title: 'Permission Denied',
+          description: 'Your session may have expired. Please login again.',
+          variant: 'destructive',
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete project',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
