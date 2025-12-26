@@ -234,14 +234,14 @@ const CertificatesSection = () => {
 
               {/* Certificate Preview with glowing border */}
               {(currentCert.thumbnail_url || currentCert.credential_url) && (
-                <div className="flex-shrink-0 w-32 sm:w-40">
+                <div className="flex-shrink-0">
                   <div className="p-[2px] rounded-lg bg-gradient-to-br from-terminal-green via-terminal-cyan to-terminal-green shadow-[0_0_10px_#00ff41]">
                     {currentCert.thumbnail_url ? (
                       <img
                         src={currentCert.thumbnail_url}
                         alt={currentCert.title}
                         loading="lazy"
-                        className="w-full h-40 sm:h-48 object-contain bg-terminal-dark rounded cursor-pointer"
+                        className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
                     ) : /\.(jpg|jpeg|png|webp|gif)$/i.test(currentCert.credential_url || '') ? (
@@ -249,21 +249,23 @@ const CertificatesSection = () => {
                         src={currentCert.credential_url!}
                         alt={currentCert.title}
                         loading="lazy"
-                        className="w-full h-40 sm:h-48 object-contain bg-terminal-dark rounded cursor-pointer"
+                        className="max-w-32 sm:max-w-40 max-h-44 sm:max-h-52 w-auto h-auto object-contain bg-terminal-dark rounded cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       />
                     ) : /\.pdf(\?|#|$)/i.test(currentCert.credential_url || '') ? (
                       <div
-                        className="w-full h-40 sm:h-48 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
+                        className="w-32 sm:w-40 h-44 sm:h-52 bg-terminal-dark rounded overflow-hidden cursor-pointer relative group"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       >
                         {pdfPreviewUrl ? (
-                          <iframe
-                            key={pdfPreviewUrl}
-                            src={pdfPreviewUrl}
-                            className="w-[200%] h-[200%] origin-top-left scale-50 pointer-events-none"
-                            title={currentCert.title}
-                          />
+                          <div className="w-full h-full overflow-hidden">
+                            <iframe
+                              key={pdfPreviewUrl}
+                              src={pdfPreviewUrl}
+                              className="w-[250%] h-[250%] origin-top-left scale-[0.4] pointer-events-none border-0"
+                              title={currentCert.title}
+                            />
+                          </div>
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                             <div className="text-terminal-cyan text-2xl">📄</div>
@@ -276,19 +278,19 @@ const CertificatesSection = () => {
                             )}
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-center justify-center">
-                          <span className="opacity-0 group-hover:opacity-100 text-terminal-green text-xs font-bold transition-opacity">
+                        <div className="absolute inset-0 bg-transparent group-hover:bg-terminal-green/10 transition-colors flex items-end justify-center pb-2">
+                          <span className="opacity-0 group-hover:opacity-100 text-terminal-green text-xs font-bold transition-opacity bg-terminal-dark/80 px-2 py-1 rounded">
                             Click to view
                           </span>
                         </div>
                       </div>
                     ) : (
                       <div
-                        className="w-full h-40 sm:h-48 bg-terminal-dark rounded flex flex-col items-center justify-center cursor-pointer"
+                        className="w-32 sm:w-40 h-32 sm:h-40 bg-terminal-dark rounded flex flex-col items-center justify-center cursor-pointer"
                         onClick={() => handleViewCertificate(currentCert.credential_url)}
                       >
                         <div className="text-terminal-cyan text-2xl">🔗</div>
-                        <span className="text-terminal-green text-xs">Open link</span>
+                        <span className="text-terminal-green text-xs mt-1">Open link</span>
                       </div>
                     )}
                   </div>
