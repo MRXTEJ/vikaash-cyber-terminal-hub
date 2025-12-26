@@ -19,7 +19,7 @@ const Index = () => {
         ? 'bg-terminal-darker text-terminal-green' 
         : 'bg-background text-foreground'
     }`}>
-      {theme === 'dark' && <MatrixRain />}
+      <MatrixRain />
       <Navigation />
       <main>
         <HeroSection />
