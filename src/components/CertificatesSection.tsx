@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,6 +12,8 @@ interface Certificate {
   display_order: number;
 }
 
+const POLL_INTERVAL_MS = 30_000;
+
 const CertificatesSection = () => {
   const [selectedCert, setSelectedCert] = useState(0);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -19,6 +21,25 @@ const CertificatesSection = () => {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
 
   const selectedCredentialUrl = certificates[selectedCert]?.credential_url ?? null;
+
+  const fetchCertificates = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('certificates')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setCertificates(data || []);
+
+      // Keep selected index valid after list changes
+      setSelectedCert((prev) => Math.min(prev, Math.max((data?.length ?? 1) - 1, 0)));
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let objectUrl: string | null = null;
@@ -52,25 +73,31 @@ const CertificatesSection = () => {
     };
   }, [selectedCredentialUrl]);
 
+  // Initial load
   useEffect(() => {
     fetchCertificates();
-  }, []);
+  }, [fetchCertificates]);
 
-  const fetchCertificates = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('certificates')
-        .select('*')
-        .order('display_order', { ascending: true });
+  // Refresh when user returns to the tab/window (common after admin updates)
+  useEffect(() => {
+    const onFocus = () => fetchCertificates();
+    const onVisibility = () => {
+      if (!document.hidden) fetchCertificates();
+    };
 
-      if (error) throw error;
-      setCertificates(data || []);
-    } catch (error) {
-      console.error('Error fetching certificates:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    const interval = window.setInterval(() => {
+      if (!document.hidden) fetchCertificates();
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.clearInterval(interval);
+    };
+  }, [fetchCertificates]);
 
   const handleViewCertificate = (link: string | null) => {
     if (link) {
