@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TypeWriter from './TypeWriter';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,26 +31,49 @@ const HeroSection = () => {
   const [heroData, setHeroData] = useState<HeroData>(defaultHeroData);
   const [currentSkill, setCurrentSkill] = useState(0);
 
-  useEffect(() => {
-    fetchHeroData();
-  }, []);
-
-  const fetchHeroData = async () => {
+  const fetchHeroData = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
         .select('value')
         .eq('key', 'hero_data')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       if (data?.value) {
         setHeroData(JSON.parse(data.value));
       }
     } catch (error) {
       console.error('Error fetching hero data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchHeroData();
+  }, [fetchHeroData]);
+
+  // Realtime subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('hero-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'key=eq.hero_data',
+        },
+        () => {
+          fetchHeroData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchHeroData]);
 
   // Animate through skills
   useEffect(() => {

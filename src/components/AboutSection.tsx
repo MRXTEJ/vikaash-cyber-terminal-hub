@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TerminalWindow from './TerminalWindow';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,26 +31,49 @@ const defaultAboutData: AboutData = {
 const AboutSection = () => {
   const [aboutData, setAboutData] = useState<AboutData>(defaultAboutData);
 
-  useEffect(() => {
-    fetchAboutData();
-  }, []);
-
-  const fetchAboutData = async () => {
+  const fetchAboutData = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
         .select('value')
         .eq('key', 'about_data')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       if (data?.value) {
         setAboutData(JSON.parse(data.value));
       }
     } catch (error) {
       console.error('Error fetching about data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAboutData();
+  }, [fetchAboutData]);
+
+  // Realtime subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('about-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'key=eq.about_data',
+        },
+        () => {
+          fetchAboutData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAboutData]);
 
   return (
     <section id="about" className="py-20 relative">
