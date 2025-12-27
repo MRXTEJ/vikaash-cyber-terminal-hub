@@ -1,7 +1,29 @@
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 
 const Footer = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSecretClick = () => {
+    clickCountRef.current += 1;
+    
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+    
+    if (clickCountRef.current >= 5) {
+      clickCountRef.current = 0;
+      navigate('/auth');
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 800);
+    }
+  };
 
   const socialLinks = [
     { name: 'LinkedIn', url: '#' },
@@ -15,7 +37,12 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="text-center">
           <div className={`mb-4 ${theme === 'dark' ? 'text-terminal-green' : 'text-primary'}`}>
-            <span className={`text-2xl ${theme === 'dark' ? 'glow-text' : 'font-bold'}`}>&lt;/VikaashTripathi&gt;</span>
+            <span 
+              onClick={handleSecretClick}
+              className={`text-2xl cursor-default select-none ${theme === 'dark' ? 'glow-text' : 'font-bold'}`}
+            >
+              &lt;/VikaashTripathi&gt;
+            </span>
           </div>
           <p className={`mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
             Cybersecurity Professional | Ethical Hacker | Security Researcher

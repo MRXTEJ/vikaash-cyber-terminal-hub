@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 const Navigation = () => {
@@ -126,17 +125,6 @@ const Navigation = () => {
               {theme === 'dark' ? <Sun className="w-4 h-4 lg:w-5 lg:h-5" /> : <Moon className="w-4 h-4 lg:w-5 lg:h-5" />}
             </button>
 
-            <Link
-              to="/auth"
-              className={`flex items-center gap-1 text-xs lg:text-sm font-mono transition-all duration-300 px-3 py-1 rounded ${
-                theme === 'dark'
-                  ? 'text-terminal-green border border-terminal-green/50 hover:text-terminal-red hover:border-terminal-red/50'
-                  : 'text-primary border border-primary/50 hover:text-destructive hover:border-destructive/50'
-              }`}
-            >
-              <User className="w-3 h-3 lg:w-4 lg:h-4" />
-              Admin
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -183,16 +171,6 @@ const Navigation = () => {
                   {item.label}
                 </button>
               ))}
-              <Link
-                to="/auth"
-                className={`flex items-center gap-2 text-sm font-mono transition-all duration-300 py-2 ${
-                  theme === 'dark' ? 'text-terminal-green hover:text-terminal-red' : 'text-primary hover:text-destructive'
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <User className="w-4 h-4" />
-                Admin Login
-              </Link>
             </div>
           </div>
         )}
