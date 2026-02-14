@@ -172,32 +172,72 @@ const SecuritySettings = () => {
 
       const totpFactor = factorsData.totp.find(f => f.status === 'verified');
       
-      if (totpFactor) {
-        const { error } = await supabase.auth.mfa.unenroll({
-          factorId: totpFactor.id
-        });
+      if (!totpFactor) return;
 
-        if (error) {
+      // First, verify AAL2 by challenging and verifying the current factor
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      
+      if (aalData?.currentLevel !== 'aal2') {
+        // Need to elevate to AAL2 first - challenge and prompt for code
+        const code = window.prompt('Enter your 2FA code from authenticator app to confirm disabling:');
+        if (!code || code.length !== 6) {
           toast({
-            title: 'Error',
-            description: error.message,
+            title: 'Cancelled',
+            description: 'You need to enter a valid 2FA code to disable.',
             variant: 'destructive',
           });
+          setIsDisabling(false);
           return;
         }
 
-        // Delete recovery codes when disabling 2FA
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from('recovery_codes').delete().eq('user_id', user.id);
+        const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+          factorId: totpFactor.id
+        });
+
+        if (challengeError) {
+          toast({ title: 'Error', description: challengeError.message, variant: 'destructive' });
+          setIsDisabling(false);
+          return;
         }
 
-        toast({
-          title: '2FA Disabled',
-          description: 'Two-factor authentication has been disabled',
+        const { error: verifyError } = await supabase.auth.mfa.verify({
+          factorId: totpFactor.id,
+          challengeId: challengeData.id,
+          code: code
         });
-        refresh();
+
+        if (verifyError) {
+          toast({ title: 'Verification Failed', description: 'Invalid code. Please try again.', variant: 'destructive' });
+          setIsDisabling(false);
+          return;
+        }
       }
+
+      // Now at AAL2, safe to unenroll
+      const { error } = await supabase.auth.mfa.unenroll({
+        factorId: totpFactor.id
+      });
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Delete recovery codes when disabling 2FA
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('recovery_codes').delete().eq('user_id', user.id);
+      }
+
+      toast({
+        title: '2FA Disabled',
+        description: 'Two-factor authentication has been disabled',
+      });
+      refresh();
     } catch (error: any) {
       toast({
         title: 'Error',
